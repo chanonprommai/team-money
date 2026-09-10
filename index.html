@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Money</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f5f7fb;color:#172033}
+header{background:#111827;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:22px}.wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 14px #00000008}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:16px;border-radius:12px;background:#f8fafc}.stat b{display:block;font-size:25px;margin-top:6px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}input,select,button{font:inherit;padding:10px 12px;border-radius:9px;border:1px solid #d1d5db}
+input,select{background:#fff}button{cursor:pointer;background:#111827;color:#fff;border:0}button.secondary{background:#e5e7eb;color:#111827}
+button.danger{background:#b91c1c}.hidden{display:none}.muted{color:#6b7280;font-size:14px}.error{color:#b91c1c;margin-top:8px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #eee}
+.bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}.bar>div{height:100%;background:#111827}
+.auth{max-width:430px;margin:70px auto}.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.grid{grid-template-columns:1fr}table{font-size:13px}}
+</style>
+</head>
+<body>
+<header><h1>💰 Team Money</h1><div id="userBox"></div></header>
+
+<div id="auth" class="auth card">
+  <h2 id="authTitle">เข้าสู่ระบบ</h2>
+  <div class="tabs">
+    <button id="loginTab">เข้าสู่ระบบ</button>
+    <button class="secondary" id="signupTab">สมัครสมาชิก</button>
+  </div>
+  <input id="email" type="email" placeholder="Email" style="width:100%;margin-bottom:8px">
+  <input id="password" type="password" placeholder="Password" style="width:100%;margin-bottom:8px">
+  <button id="authBtn" style="width:100%">เข้าสู่ระบบ</button>
+  <div id="authMsg" class="error"></div>
+</div>
+
+<main id="app" class="wrap hidden">
+  <div class="card">
+    <div class="row">
+      <select id="projectSelect" style="min-width:240px"></select>
+      <button id="newProjectBtn">+ สร้าง Project</button>
+      <button id="deleteProjectBtn" class="danger">🗑️ ลบ Project</button>
+      <button id="logoutBtn" class="secondary">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <div id="projectArea">
+    <div class="grid">
+      <div class="stat">งบประมาณ<b id="budget">฿0</b></div>
+      <div class="stat">เงินเข้า<b id="income">฿0</b></div>
+      <div class="stat">ใช้ไป<b id="expense">฿0</b></div>
+      <div class="stat">คงเหลือ<b id="balance">฿0</b></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h3>เพิ่มรายการ</h3>
+        <span class="muted" id="projectName"></span>
+      </div>
+      <div class="row">
+        <select id="type"><option value="income">เงินเข้า</option><option value="expense">ค่าใช้จ่าย</option></select>
+        <input id="desc" placeholder="รายละเอียด เช่น ซื้อสายไฟ">
+        <input id="amount" type="number" min="0" step="0.01" placeholder="จำนวนเงิน">
+        <input id="category" placeholder="หมวดหมู่ เช่น อุปกรณ์">
+<input id="note" placeholder="หมายเหตุ (ถ้ามี)">
+        <button id="addTx">บันทึก</button>
+      </div>
+      <div id="txMsg" class="error"></div>
+    </div>
+
+    <div class="card">
+      <h3>ความคืบหน้างบประมาณ</h3>
+      <div class="bar"><div id="progress"></div></div>
+      <p class="muted" id="progressText">0%</p>
+    </div>
+
+    <div class="card">
+      <h3>รายการล่าสุด</h3><div class="muted" style="margin-bottom:10px">ผู้บันทึกจะถูกผูกกับบัญชีที่ Login อยู่โดยอัตโนมัติ</div>
+      <div style="overflow:auto">
+        <table><thead><tr><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>หมวดหมู่</th><th>จำนวน</th><th>ผู้บันทึก</th><th>หมายเหตุ</th></tr></thead>
+        <tbody id="txTable"></tbody></table>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<div id="setup" class="auth card hidden" style="max-width:520px">
+  <h2>ตั้งค่า Team Money</h2>
+  <p class="muted">ใส่ค่าจาก Supabase แค่ครั้งเดียว ไม่ต้องเปิดไฟล์ JavaScript</p>
+  <input id="setupUrl" placeholder="Supabase Project URL" style="width:100%;margin-bottom:8px">
+  <input id="setupKey" placeholder="Supabase Publishable Key" style="width:100%;margin-bottom:8px">
+  <button id="setupBtn" style="width:100%">เริ่มใช้งาน</button>
+  <div id="setupMsg" class="error"></div>
+</div>
+<script>
+
+let sb, user, projects=[], currentProject=null, mode="login";
+
+function money(n){return new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:2}).format(n||0)}
+function msg(id,t){document.getElementById(id).textContent=t||''}
+
+async function setup(){
+  const url=document.getElementById('setupUrl').value.trim();
+  const key=document.getElementById('setupKey').value.trim();
+  if(!url||!key){document.getElementById('setupMsg').textContent='กรอกทั้ง 2 ช่องก่อน';return;}
+  if(!url.startsWith('https://')){document.getElementById('setupMsg').textContent='Project URL ควรขึ้นต้นด้วย https://';return;}
+  localStorage.setItem('team_money_config',JSON.stringify({url,key}));
+  location.reload();
+}
+function init(){
+  const saved=JSON.parse(localStorage.getItem('team_money_config')||'null');
+  if(!saved?.url || !saved?.key){
+    document.getElementById('auth').classList.add('hidden');
+    document.getElementById('setup').classList.remove('hidden');
+    document.getElementById('setupBtn').onclick=setup;
+    return;
+  }
+  sb=supabase.createClient(saved.url, saved.key);
+  document.getElementById('loginTab').onclick=()=>setMode('login');
+  document.getElementById('signupTab').onclick=()=>setMode('signup');
+  document.getElementById('authBtn').onclick=auth;
+  document.getElementById('logoutBtn').onclick=()=>sb.auth.signOut();
+  document.getElementById('newProjectBtn').onclick=createProject;
+  document.getElementById('deleteProjectBtn').onclick=deleteProject;
+  document.getElementById('addTx').onclick=addTransaction;
+  document.getElementById('projectSelect').onchange=()=>selectProject(document.getElementById('projectSelect').value);
+  sb.auth.onAuthStateChange((_e,s)=>{user=s?.user||null; renderAuth(); if(user) loadProjects();});
+  sb.auth.getSession().then(({data})=>{user=data.session?.user||null;renderAuth();if(user)loadProjects()});
+}
+function setMode(m){mode=m;document.getElementById('authTitle').textContent=m==='login'?'เข้าสู่ระบบ':'สมัครสมาชิก';document.getElementById('authBtn').textContent=m==='login'?'เข้าสู่ระบบ':'สมัครสมาชิก';msg('authMsg','')}
+async function auth(){
+  msg('authMsg','');
+  const email=document.getElementById('email').value.trim(), password=document.getElementById('password').value;
+  if(!email||!password)return msg('authMsg','กรอก Email และ Password ก่อน');
+  let r=mode==='login'?await sb.auth.signInWithPassword({email,password}):await sb.auth.signUp({email,password});
+  if(r.error)return msg('authMsg',r.error.message);
+  if(mode==='signup')msg('authMsg','สมัครสำเร็จ ถ้าระบบเปิดยืนยัน Email ให้ไปยืนยันก่อน แล้วค่อยเข้าสู่ระบบ');
+}
+function renderAuth(){
+  document.getElementById('auth').classList.toggle('hidden',!!user);
+  document.getElementById('app').classList.toggle('hidden',!user);
+  document.getElementById('userBox').textContent=user?user.email:'';
+}
+async function loadProjects(){
+  const {data,error}=await sb.from('projects').select('*').order('created_at',{ascending:true});
+  if(error)return alert(error.message);
+  projects=data||[];
+  const sel=document.getElementById('projectSelect');sel.innerHTML='';
+  if(!projects.length){document.getElementById('projectName').textContent='ยังไม่มี Project';return;}
+  projects.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o)});
+  selectProject(projects[0].id);
+}
+async function createProject(){
+  const name=prompt('ชื่อ Project เช่น ติดตั้ง Solar');
+  if(!name)return;
+  const b=prompt('งบประมาณ (บาท)','0');
+  const {data,error}=await sb.from('projects').insert({name,budget:Number(b)||0,created_by:user.id}).select().single();
+  if(error)return alert(error.message);
+  await loadProjects();
+  selectProject(data.id);
+}
+
+async function deleteProject(){
+  if(!currentProject)return alert('ยังไม่ได้เลือก Project');
+  const ok=confirm(`ต้องการลบ Project "${currentProject.name}" ใช่หรือไม่?\n\nรายการเงินเข้าและค่าใช้จ่ายทั้งหมดของ Project นี้จะถูกลบด้วย และไม่สามารถกู้คืนได้`);
+  if(!ok)return;
+  const confirmName=prompt(`พิมพ์ชื่อ Project "${currentProject.name}" เพื่อยืนยันการลบ`);
+  if(confirmName!==currentProject.name)return alert('ชื่อ Project ไม่ตรงกัน ยกเลิกการลบ');
+  const {error}=await sb.rpc('delete_project', {p_project_id: currentProject.id});
+  if(error)return alert(error.message);
+  alert('ลบ Project เรียบร้อยแล้ว');
+  currentProject=null;
+  await loadProjects();
+  if(!projects.length){
+    document.getElementById('projectName').textContent='ยังไม่มี Project';
+    document.getElementById('txTable').innerHTML='';
+    document.getElementById('budget').textContent=money(0);
+    document.getElementById('income').textContent=money(0);
+    document.getElementById('expense').textContent=money(0);
+    document.getElementById('balance').textContent=money(0);
+    document.getElementById('progress').style.width='0%';
+    document.getElementById('progressText').textContent='0% ของงบถูกใช้ไป';
+  }
+}
+
+async function selectProject(id){
+  currentProject=projects.find(p=>p.id===id); if(!currentProject)return;
+  document.getElementById('projectName').textContent=currentProject.name;
+  await refresh();
+}
+async function refresh(){
+  const {data,error}=await sb.from('transactions').select('*').eq('project_id',currentProject.id).order('created_at',{ascending:false});
+  if(error){msg('txMsg',error.message);return}
+  let income=0,expense=0;
+  (data||[]).forEach(t=>t.type==='income'?income+=Number(t.amount):expense+=Number(t.amount));
+  document.getElementById('budget').textContent=money(currentProject.budget);
+  document.getElementById('income').textContent=money(income);
+  document.getElementById('expense').textContent=money(expense);
+  document.getElementById('balance').textContent=money(income-expense);
+  const pct=currentProject.budget>0?Math.min(100,expense/currentProject.budget*100):0;
+  document.getElementById('progress').style.width=pct+'%';
+  document.getElementById('progressText').textContent=pct.toFixed(1)+'% ของงบถูกใช้ไป';
+  document.getElementById('txTable').innerHTML=(data||[]).map(t=>`<tr><td>${new Date(t.created_at).toLocaleDateString('th-TH')}</td><td>${t.type==='income'?'เงินเข้า':'ค่าใช้จ่าย'}</td><td>${escapeHtml(t.description||'-')}</td><td>${escapeHtml(t.category||'-')}</td><td>${money(t.amount)}</td><td>${escapeHtml(t.recorded_by||'-')}</td><td>${escapeHtml(t.note||'-')}</td></tr>`).join('');
+}
+async function addTransaction(){
+  msg('txMsg','');
+  if(!currentProject)return msg('txMsg','สร้าง Project ก่อน');
+  const type=document.getElementById('type').value, description=document.getElementById('desc').value.trim(), amount=Number(document.getElementById('amount').value), category=document.getElementById('category').value.trim(), note=document.getElementById('note').value.trim();
+  if(!amount||amount<=0)return msg('txMsg','กรอกจำนวนเงิน');
+  const {error}=await sb.from('transactions').insert({project_id:currentProject.id,type,description,amount,category,note,user_id:user.id,recorded_by:user.email});
+  if(error)return msg('txMsg',error.message);
+  document.getElementById('desc').value='';document.getElementById('amount').value='';document.getElementById('category').value='';document.getElementById('note').value='';
+  await refresh();
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+init();
+</script>
+</body>
+</html>
