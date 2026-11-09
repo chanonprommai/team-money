@@ -13,7 +13,7 @@ localStorage.setItem('team_money_config', JSON.stringify({url:"https://aphbgerac
 header{background:#111827;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
 h1{margin:0;font-size:22px}.wrap{max-width:1100px;margin:24px auto;padding:0 16px}
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 14px #00000008}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:16px;border-radius:12px;background:#f8fafc}.stat b{display:block;font-size:25px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:16px;border-radius:12px;background:#f8fafc}.stat b{display:block;font-size:25px;margin-top:6px}.profit-positive{color:#047857}.profit-negative{color:#b91c1c}.page-tabs{padding:12px 16px}.page-tabs button{min-width:150px}.chart-wrap{width:100%;overflow:hidden}.chart-wrap svg{display:block;width:100%;height:auto;max-height:360px}.chart-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:14px;color:#4b5563}.legend-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}input,select,button{font:inherit;padding:10px 12px;border-radius:9px;border:1px solid #d1d5db}
 input,select{background:#fff}button{cursor:pointer;background:#111827;color:#fff;border:0}button.secondary{background:#e5e7eb;color:#111827}
 button.danger{background:#b91c1c}.hidden{display:none}.muted{color:#6b7280;font-size:14px}.error{color:#b91c1c;margin-top:8px}
@@ -47,6 +47,11 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
       <button id="logoutBtn" class="secondary">ออกจากระบบ</button>
     </div>
   </div>
+
+  <div class="card page-tabs"><div class="row">
+    <button id="recordsTab">🧾 รายการ</button>
+    <button id="dashboardTab" class="secondary">📊 กราฟและกำไร</button>
+  </div></div>
 
   <div id="projectArea">
     <div class="grid">
@@ -84,6 +89,31 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
         <table><thead><tr><th>ลบ</th><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>หมวดหมู่</th><th>จำนวน</th><th>ผู้บันทึก</th><th>หมายเหตุ</th></tr></thead>
         <tbody id="txTable"></tbody></table>
       </div>
+    </div>
+  </div>
+
+  <div id="dashboardArea" class="hidden">
+    <div class="grid">
+      <div class="stat">รายรับรวม<b id="dashIncome">฿0</b></div>
+      <div class="stat">ค่าใช้จ่ายรวม<b id="dashExpense">฿0</b></div>
+      <div class="stat">กำไรสุทธิ<b id="dashProfit" class="profit-positive">฿0</b></div>
+      <div class="stat">อัตรากำไร<b id="dashMargin">0.0%</b></div>
+    </div>
+    <div class="card">
+      <h3>กราฟค่าใช้จ่ายและกำไรรายเดือน</h3>
+      <p class="muted">เปรียบเทียบค่าใช้จ่ายกับกำไรสุทธิย้อนหลัง 6 เดือนของ Project ที่เลือก</p>
+      <div class="chart-wrap">
+        <svg id="financeChart" viewBox="0 0 800 320" role="img" aria-label="กราฟค่าใช้จ่ายและกำไรรายเดือน"></svg>
+      </div>
+      <div class="chart-legend">
+        <span><i class="legend-dot" style="background:#f59e0b"></i>ค่าใช้จ่าย</span>
+        <span><i class="legend-dot" style="background:#059669"></i>กำไรสุทธิ (ค่าติดลบแสดงสีแดง)</span>
+      </div>
+      <p id="chartCaption" class="muted">คำนวณจากรายการเงินเข้าและค่าใช้จ่ายใน Project</p>
+    </div>
+    <div class="card">
+      <h3>วิธีคำนวณ</h3>
+      <p class="muted">กำไรสุทธิ = รายรับรวม − ค่าใช้จ่ายรวม และอัตรากำไร = กำไรสุทธิ ÷ รายรับรวม × 100</p>
     </div>
   </div>
 </main>
@@ -128,6 +158,8 @@ function init(){
   document.getElementById('newProjectBtn').onclick=createProject;
   document.getElementById('deleteProjectBtn').onclick=deleteProject;
   document.getElementById('addTx').onclick=addTransaction;
+  document.getElementById('recordsTab').onclick=()=>showPage('records');
+  document.getElementById('dashboardTab').onclick=()=>showPage('dashboard');
   document.getElementById('projectSelect').onchange=()=>selectProject(document.getElementById('projectSelect').value);
   sb.auth.onAuthStateChange((_e,s)=>{user=s?.user||null; renderAuth(); if(user) loadProjects();});
   sb.auth.getSession().then(({data})=>{user=data.session?.user||null;renderAuth();if(user)loadProjects()});
@@ -188,6 +220,14 @@ async function deleteProject(){
   }
 }
 
+function showPage(page){
+  const dashboard=page==='dashboard';
+  document.getElementById('projectArea').classList.toggle('hidden',dashboard);
+  document.getElementById('dashboardArea').classList.toggle('hidden',!dashboard);
+  document.getElementById('recordsTab').classList.toggle('secondary',dashboard);
+  document.getElementById('dashboardTab').classList.toggle('secondary',!dashboard);
+}
+
 async function selectProject(id){
   currentProject=projects.find(p=>p.id===id); if(!currentProject)return;
   document.getElementById('projectName').textContent=currentProject.name;
@@ -206,7 +246,91 @@ async function refresh(){
   document.getElementById('progress').style.width=pct+'%';
   document.getElementById('progressText').textContent=pct.toFixed(1)+'% ของงบถูกใช้ไป';
   document.getElementById('txTable').innerHTML=(data||[]).map(t=>`<tr><td style="white-space:nowrap"><button class="danger" type="button" onclick="deleteTransaction('${t.id}')">🗑️ ลบ</button></td><td>${new Date(t.created_at).toLocaleDateString('th-TH')}</td><td>${t.type==='income'?'เงินเข้า':'ค่าใช้จ่าย'}</td><td>${escapeHtml(t.description||'-')}</td><td>${escapeHtml(t.category||'-')}</td><td>${money(t.amount)}</td><td>${escapeHtml(t.recorded_by||'-')}</td><td>${escapeHtml(t.note||'-')}</td></tr>`).join('');
+  renderDashboard(data||[]);
 }
+function compactAmount(value){
+  const n=Number(value)||0, a=Math.abs(n);
+  if(a>=1000000)return (n/1000000).toFixed(1)+'m';
+  if(a>=1000)return (n/1000).toFixed(0)+'k';
+  return Math.round(n).toString();
+}
+
+function renderDashboard(data){
+  let totalIncome=0,totalExpense=0;
+  (data||[]).forEach(t=>{
+    const amount=Number(t.amount)||0;
+    if(t.type==='income')totalIncome+=amount;
+    else if(t.type==='expense')totalExpense+=amount;
+  });
+  const totalProfit=totalIncome-totalExpense;
+  document.getElementById('dashIncome').textContent=money(totalIncome);
+  document.getElementById('dashExpense').textContent=money(totalExpense);
+  const profitEl=document.getElementById('dashProfit');
+  profitEl.textContent=money(totalProfit);
+  profitEl.className=totalProfit>=0?'profit-positive':'profit-negative';
+  const margin=totalIncome>0?(totalProfit/totalIncome)*100:0;
+  document.getElementById('dashMargin').textContent=margin.toFixed(1)+'%';
+
+  const now=new Date();
+  const months=Array.from({length:6},(_,i)=>new Date(now.getFullYear(),now.getMonth()-5+i,1));
+  const buckets=months.map(month=>({
+    month,
+    key:month.getFullYear()+'-'+String(month.getMonth()+1).padStart(2,'0'),
+    income:0,
+    expense:0
+  }));
+  const lookup=new Map(buckets.map(b=>[b.key,b]));
+  (data||[]).forEach(t=>{
+    const date=new Date(t.created_at||t.transaction_date);
+    if(Number.isNaN(date.getTime()))return;
+    const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0');
+    const bucket=lookup.get(key);
+    if(!bucket)return;
+    const amount=Number(t.amount)||0;
+    if(t.type==='income')bucket.income+=amount;
+    else if(t.type==='expense')bucket.expense+=amount;
+  });
+  buckets.forEach(b=>b.profit=b.income-b.expense);
+
+  const W=800,H=320,L=72,R=22,T=22,B=54;
+  const plotW=W-L-R,plotH=H-T-B;
+  const maxValue=Math.max(0,...buckets.map(b=>Math.max(b.expense,b.profit)));
+  const minValue=Math.min(0,...buckets.map(b=>b.profit));
+  const spread=Math.max(1,maxValue-minValue);
+  const yMin=minValue-spread*0.12,yMax=maxValue+spread*0.12;
+  const y=value=>T+((yMax-value)/(yMax-yMin))*plotH;
+  const zeroY=y(0);
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="กราฟค่าใช้จ่ายและกำไรรายเดือน">`;
+  for(let i=0;i<=4;i++){
+    const value=yMax-(yMax-yMin)*i/4;
+    const yy=y(value);
+    svg+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#e5e7eb" stroke-width="1"/>`;
+    svg+=`<text x="${L-10}" y="${yy+4}" font-size="11" fill="#6b7280" text-anchor="end">${compactAmount(value)}</text>`;
+  }
+  svg+=`<line x1="${L}" y1="${zeroY}" x2="${W-R}" y2="${zeroY}" stroke="#9ca3af" stroke-width="1.4"/>`;
+  const groupW=plotW/buckets.length;
+  const barW=Math.min(28,groupW*0.26);
+  buckets.forEach((b,i)=>{
+    const center=L+groupW*(i+0.5);
+    const values=[
+      {value:b.expense,x:center-barW-3,color:'#f59e0b'},
+      {value:b.profit,x:center+3,color:b.profit>=0?'#059669':'#dc2626'}
+    ];
+    values.forEach(item=>{
+      const yy=y(item.value),height=Math.max(0.8,Math.abs(zeroY-yy));
+      const top=Math.min(yy,zeroY);
+      svg+=`<rect x="${item.x}" y="${top}" width="${barW}" height="${height}" rx="4" fill="${item.color}"/>`;
+    });
+    const label=b.month.toLocaleDateString('th-TH',{month:'short'});
+    svg+=`<text x="${center}" y="${H-22}" font-size="12" fill="#4b5563" text-anchor="middle">${label}</text>`;
+  });
+  svg+='</svg>';
+  document.getElementById('financeChart').outerHTML=svg.replace('<svg ','<svg id="financeChart" ');
+  document.getElementById('chartCaption').textContent=(data||[]).length
+    ?'กำไรรวมของ Project นี้ '+money(totalProfit)+' • แสดงข้อมูลรายเดือนย้อนหลัง 6 เดือน'
+    :'ยังไม่มีรายการเงินเข้า/ค่าใช้จ่ายสำหรับนำมาแสดงกราฟ';
+}
+
 async function deleteTransaction(id){
   if(!currentProject||!id)return;
   const ok=confirm('ยืนยันลบรายการนี้ใช่หรือไม่?\\n\\nเมื่อลบแล้วจะไม่สามารถกู้คืนได้');
