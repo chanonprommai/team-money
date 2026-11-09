@@ -43,6 +43,7 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
     <div class="row">
       <select id="projectSelect" style="min-width:240px"></select>
       <button id="newProjectBtn">+ สร้าง Project</button>
+      <button id="editProjectBtn" class="secondary">✏️ แก้ไข Project</button>
       <button id="deleteProjectBtn" class="danger">🗑️ ลบ Project</button>
       <button id="logoutBtn" class="secondary">ออกจากระบบ</button>
     </div>
@@ -156,6 +157,7 @@ function init(){
   document.getElementById('authBtn').onclick=auth;
   document.getElementById('logoutBtn').onclick=()=>sb.auth.signOut();
   document.getElementById('newProjectBtn').onclick=createProject;
+  document.getElementById('editProjectBtn').onclick=editProject;
   document.getElementById('deleteProjectBtn').onclick=deleteProject;
   document.getElementById('addTx').onclick=addTransaction;
   document.getElementById('recordsTab').onclick=()=>showPage('records');
@@ -195,6 +197,28 @@ async function createProject(){
   if(error)return alert(error.message);
   await loadProjects();
   selectProject(data.id);
+}
+
+async function editProject(){
+  if(!currentProject)return alert('ยังไม่ได้เลือก Project');
+  const projectId=currentProject.id;
+  const nameInput=prompt('แก้ไขชื่อ Project',currentProject.name);
+  if(nameInput===null)return;
+  const name=nameInput.trim();
+  if(!name)return alert('กรุณาระบุชื่อ Project');
+  const budgetInput=prompt('แก้ไขงบประมาณ (บาท)',String(currentProject.budget??0));
+  if(budgetInput===null)return;
+  const budget=Number(budgetInput);
+  if(!Number.isFinite(budget)||budget<0)return alert('กรุณากรอกงบประมาณเป็นตัวเลขตั้งแต่ 0 ขึ้นไป');
+
+  const {error}=await sb.from('projects')
+    .update({name,budget})
+    .eq('id',projectId);
+  if(error)return alert('แก้ไข Project ไม่สำเร็จ: '+error.message);
+
+  await loadProjects();
+  await selectProject(projectId);
+  alert('บันทึกการแก้ไข Project เรียบร้อยแล้ว');
 }
 
 async function deleteProject(){
