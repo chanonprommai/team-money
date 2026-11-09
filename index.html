@@ -79,9 +79,9 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
     </div>
 
     <div class="card">
-      <h3>รายการล่าสุด</h3><div class="muted" style="margin-bottom:10px">ผู้บันทึกจะถูกผูกกับบัญชีที่ Login อยู่โดยอัตโนมัติ</div>
+      <h3>รายการล่าสุด</h3><div class="muted" style="margin-bottom:10px">ผู้บันทึกจะถูกผูกกับบัญชีที่ Login อยู่โดยอัตโนมัติ • ปุ่มลบอยู่คอลัมน์แรกของตาราง</div>
       <div style="overflow:auto">
-        <table><thead><tr><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>หมวดหมู่</th><th>จำนวน</th><th>ผู้บันทึก</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead>
+        <table><thead><tr><th>ลบ</th><th>วันที่</th><th>ประเภท</th><th>รายละเอียด</th><th>หมวดหมู่</th><th>จำนวน</th><th>ผู้บันทึก</th><th>หมายเหตุ</th></tr></thead>
         <tbody id="txTable"></tbody></table>
       </div>
     </div>
@@ -205,7 +205,7 @@ async function refresh(){
   const pct=currentProject.budget>0?Math.min(100,expense/currentProject.budget*100):0;
   document.getElementById('progress').style.width=pct+'%';
   document.getElementById('progressText').textContent=pct.toFixed(1)+'% ของงบถูกใช้ไป';
-  document.getElementById('txTable').innerHTML=(data||[]).map(t=>`<tr><td>${new Date(t.created_at).toLocaleDateString('th-TH')}</td><td>${t.type==='income'?'เงินเข้า':'ค่าใช้จ่าย'}</td><td>${escapeHtml(t.description||'-')}</td><td>${escapeHtml(t.category||'-')}</td><td>${money(t.amount)}</td><td>${escapeHtml(t.recorded_by||'-')}</td><td>${escapeHtml(t.note||'-')}</td><td><button class="danger" type="button" onclick="deleteTransaction('${t.id}')">ลบ</button></td></tr>`).join('');
+  document.getElementById('txTable').innerHTML=(data||[]).map(t=>`<tr><td style="white-space:nowrap"><button class="danger" type="button" onclick="deleteTransaction('${t.id}')">🗑️ ลบ</button></td><td>${new Date(t.created_at).toLocaleDateString('th-TH')}</td><td>${t.type==='income'?'เงินเข้า':'ค่าใช้จ่าย'}</td><td>${escapeHtml(t.description||'-')}</td><td>${escapeHtml(t.category||'-')}</td><td>${money(t.amount)}</td><td>${escapeHtml(t.recorded_by||'-')}</td><td>${escapeHtml(t.note||'-')}</td></tr>`).join('');
 }
 async function deleteTransaction(id){
   if(!currentProject||!id)return;
