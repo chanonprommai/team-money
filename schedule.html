@@ -86,6 +86,7 @@ async function init(){
  sb=supabase.createClient(cfg.url,cfg.key);
  const {data:{session}}=await sb.auth.getSession();user=session?.user;
  if(!user){$('login').style.display='block';return}
+ $('app').style.display='block';
  $('userEmail').textContent=user.email||'';
  $('prevMonth').onclick=()=>changeMonth(-1);$('nextMonth').onclick=()=>changeMonth(1);
  $('todayBtn').onclick=()=>{const d=new Date();monthCursor=new Date(d.getFullYear(),d.getMonth(),1);selectDate(toISODate(d))};
@@ -164,7 +165,7 @@ async function deleteJob(id){
  if(error){alert('ลบไม่สำเร็จ: '+error.message);return}
  await loadJobs();
 }
-init();
+init().catch(err=>{ $('login').style.display='block'; $('login').innerHTML='<h2>โหลดตารางงานไม่สำเร็จ</h2><p class="muted">'+esc(err?.message||'เกิดข้อผิดพลาด')+'</p><button onclick="location.href=\'index.html\'">กลับหน้าหลัก</button>'; });
 </script>
 </body>
 </html>
