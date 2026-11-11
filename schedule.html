@@ -25,7 +25,7 @@ button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13
 .day-more{font-size:11px;color:#6b7280}.content-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);gap:16px;align-items:start}
 .field{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}.field label{font-size:13px;color:#4b5563;font-weight:650}
 .field input,.field textarea{width:100%}.field textarea{min-height:74px;resize:vertical}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.attendee-choices{display:flex;flex-wrap:wrap;gap:8px}.attendee-choice{background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:999px;padding:8px 13px}.attendee-choice.selected{background:#dbeafe;color:#1d4ed8;border:1px solid #3b82f6;font-weight:700}.attendee-empty{color:#9ca3af;font-size:13px;padding:8px 0}.full{grid-column:1/-1}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.attendee-choices{display:flex;flex-wrap:wrap;gap:8px}.attendee-choice{background:var(--member-bg);color:var(--member-fg);border:1px solid var(--member-border);border-radius:999px;padding:8px 13px;opacity:.72;transition:opacity .15s,transform .15s}.attendee-choice.selected{opacity:1;box-shadow:0 0 0 2px var(--member-border);font-weight:750;transform:translateY(-1px)}.member-badges{display:inline-flex;flex-wrap:wrap;gap:5px;vertical-align:middle}.member-badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}.attendee-empty{color:#9ca3af;font-size:13px;padding:8px 0}.full{grid-column:1/-1}
 .job{border:1px solid #e5e7eb;border-radius:11px;padding:13px;margin-top:10px}.job-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
 .job-title{font-weight:750}.job-meta{font-size:13px;color:#6b7280;margin-top:5px;line-height:1.6}.job-actions{display:flex;gap:6px}.job-actions button{font-size:12px;padding:7px 9px}
 .empty{padding:22px;text-align:center;color:#9ca3af;background:#f8fafc;border-radius:10px;margin-top:10px}
@@ -109,10 +109,17 @@ async function loadTeamMembers(){
  teamMembers=data||[];
  renderAttendeeChoices([]);
 }
+const memberPalette=[['#dbeafe','#1e40af','#60a5fa'],['#dcfce7','#166534','#4ade80'],['#fce7f3','#9d174d','#f472b6'],['#fef3c7','#92400e','#fbbf24'],['#ede9fe','#5b21b6','#a78bfa'],['#cffafe','#155e75','#22d3ee'],['#ffedd5','#9a3412','#fb923c'],['#f3e8ff','#6b21a8','#c084fc']];
+function memberColor(id){let n=0;for(let i=0;i<String(id).length;i++)n=(n*31+String(id).charCodeAt(i))>>>0;return memberPalette[n%memberPalette.length]}
+function memberBadges(ids){
+ const members=(ids||[]).map(id=>teamMembers.find(m=>m.user_id===id)).filter(Boolean);
+ if(!members.length)return '';
+ return '<span class="member-badges">'+members.map(m=>{const p=memberColor(m.user_id);return '<span class="member-badge" style="background:'+p[0]+';color:'+p[1]+';border:1px solid '+p[2]+'">'+esc(m.email)+'</span>'}).join('')+'</span>';
+}
 function renderAttendeeChoices(selectedIds=[]){
  const selected=new Set(selectedIds);
  if(!teamMembers.length){$('attendeeChoices').innerHTML='<div class="attendee-empty">ไม่พบสมาชิกใน Project นี้</div>';return}
- $('attendeeChoices').innerHTML=teamMembers.map(m=>'<button type="button" class="attendee-choice '+(selected.has(m.user_id)?'selected':'')+'" data-member="'+esc(m.user_id)+'" aria-pressed="'+selected.has(m.user_id)+'">'+(selected.has(m.user_id)?'✓ ':'')+esc(m.email)+'</button>').join('');
+ $('attendeeChoices').innerHTML=teamMembers.map(m=>{const p=memberColor(m.user_id);return '<button type="button" class="attendee-choice '+(selected.has(m.user_id)?'selected':'')+'" style="--member-bg:'+p[0]+';--member-fg:'+p[1]+';--member-border:'+p[2]+'" data-member="'+esc(m.user_id)+'" aria-pressed="'+selected.has(m.user_id)+'">'+(selected.has(m.user_id)?'✓ ':'')+esc(m.email)+'</button>'}).join('');
  $('attendeeChoices').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>{
   const id=b.dataset.member;
   const ids=Array.from($('attendeeChoices').querySelectorAll('[data-member].selected')).map(x=>x.dataset.member);
@@ -158,7 +165,7 @@ function renderDayJobs(){
  const list=jobs.filter(j=>j.work_date===selectedDate);
  $('selectedTitle').textContent=thaiDate(selectedDate);$('dayCount').textContent=list.length+' งาน';
  if(!list.length){$('dayJobs').innerHTML='<div class="empty">วันนี้ยังไม่มีงาน<br><span class="muted">เพิ่มงานได้จากแบบฟอร์มด้านล่าง</span></div>';return}
- $('dayJobs').innerHTML=list.map(j=>'<article class="job"><div class="job-head"><div><div class="job-title">'+esc(j.job_title)+'</div><div class="job-meta">'+(j.work_site?'📍 '+esc(j.work_site)+'<br>':'')+'🕒 '+esc(timeRange(j))+'<br>👷 '+esc(attendeeLabel(j))+(j.note?'<br>📝 '+esc(j.note):'')+'</div></div><div class="job-actions"><button type="button" class="secondary" data-edit="'+j.id+'">แก้ไข</button><button type="button" class="danger" data-delete="'+j.id+'">ลบ</button></div></div></article>').join('');
+ $('dayJobs').innerHTML=list.map(j=>'<article class="job"><div class="job-head"><div><div class="job-title">'+esc(j.job_title)+'</div><div class="job-meta">'+(j.work_site?'📍 '+esc(j.work_site)+'<br>':'')+'🕒 '+esc(timeRange(j))+'<br>👷 '+(j.attendee_ids?.length?memberBadges(j.attendee_ids):esc(attendeeLabel(j)))+(j.note?'<br>📝 '+esc(j.note):'')+'</div></div><div class="job-actions"><button type="button" class="secondary" data-edit="'+j.id+'">แก้ไข</button><button type="button" class="danger" data-delete="'+j.id+'">ลบ</button></div></div></article>').join('');
  $('dayJobs').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editJob(b.dataset.edit));
  $('dayJobs').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteJob(b.dataset.delete));
 }
