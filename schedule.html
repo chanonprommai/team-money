@@ -99,7 +99,7 @@ async function init(){
  await loadJobs();
 }
 function changeMonth(n){monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+n,1);renderCalendar()}
-function selectDate(date){selectedDate=date;$('workDate').value=date;resetForm(false);renderCalendar();renderDayJobs()}
+async function selectDate(date){selectedDate=date;$('workDate').value=date;resetForm(false);await loadJobs()}
 async function loadJobs(){
  if(!currentProject)return;
  $('projectHint').textContent='กำลังโหลดตารางงาน…';
