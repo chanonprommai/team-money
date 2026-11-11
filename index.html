@@ -166,6 +166,25 @@ input,select{border-color:#d4dfe5;border-radius:10px}
 @media(max-width:1000px){#scheduleArea .content-grid{grid-template-columns:1fr}}
 @media(max-width:760px){#scheduleArea .day{min-height:78px;padding:5px;gap:3px}#scheduleArea .day-events{font-size:10px;padding:2px 3px}#scheduleArea .calendar{gap:4px}#scheduleArea .weekday{font-size:11px}#scheduleArea .day-more{font-size:10px}}
 @media(max-width:560px){#scheduleArea .day{min-height:62px}#scheduleArea .calendar{gap:3px}#scheduleArea .card{padding:13px}#scheduleArea .form-grid{grid-template-columns:1fr}#scheduleArea .full{grid-column:auto}}
+/* Compact sidebar + clearer all-project overview and chart direction */
+@media(min-width:901px){
+ #app > .page-tabs{left:5.4vw!important;width:220px!important;min-width:220px!important;max-width:220px!important}
+ #app > .page-tabs > .row{gap:5px!important}
+ #app > .page-tabs button{height:46px!important;min-height:46px!important;padding:0 13px!important;font-size:14px!important;gap:8px!important;border-radius:10px!important}
+ #app > .page-tabs button .ui-icon{width:18px!important;height:18px!important;flex-basis:18px!important;margin-right:3px!important}
+ #app.wrap{margin-left:23%!important;margin-right:5.5%!important}
+}
+#homeArea:before{content:"Overall Summary";font-size:28px}
+#homeArea:after{content:"All projects • รายรับ ค่าใช้จ่าย และกำไรสุทธิรวมทุกโครงการ";font-size:14px;margin-bottom:22px}
+#homeArea .grid .stat:first-child:before{content:"ALL PROJECTS";display:block;font-size:10px;letter-spacing:.08em;font-weight:800;color:#8a9aa5;margin-bottom:3px}
+#dashboardArea .metric-row .metric-track.profit-track:after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:#94a3b8;z-index:2}
+#dashboardArea .profit-axis{display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin:3px 130px 0 100px}
+@media(max-width:900px){
+ #app > .page-tabs{width:100%!important;min-width:0!important;max-width:none!important}
+ #app > .page-tabs button{height:44px!important;min-height:44px!important;font-size:13px!important}
+ #homeArea:before{font-size:24px}
+ #homeArea:after{font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -721,6 +740,7 @@ async function renderDashboard(){
         <div class="metric-track profit-track"><div class="metric-fill" style="left:${profitLeft}%;width:${profitWidth}%;background:${profitColor}"></div></div>
         <span class="metric-value ${profitClass}">${item.profit<0?'-':''}${money(Math.abs(item.profit))}</span>
       </div>
+      <div class="profit-axis"><span>ขาดทุน ←</span><span>0</span><span>→ กำไร</span></div>
     </section>`;
   }).join('');
 
