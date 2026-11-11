@@ -127,6 +127,45 @@ input,select{border-color:#d4dfe5;border-radius:10px}
  #app > .page-tabs button{width:100%!important;height:48px!important;min-height:48px!important;padding:0 12px!important;white-space:normal!important}
  #app.wrap{margin:82px 18px 24px!important}
 }
+/* Integrated schedule module */
+#scheduleArea{padding-top:12px}
+#scheduleArea .content-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.9fr);gap:16px;align-items:start}
+#scheduleArea .card{padding:18px}
+#scheduleArea .month-title{font-size:20px;font-weight:750;color:#172b3a}
+#scheduleArea .calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin-top:16px}
+#scheduleArea .weekday{text-align:center;color:#6b7c88;font-size:13px;font-weight:700;padding:6px 0}
+#scheduleArea .day{min-width:0;min-height:104px;background:#fff;color:#172b3a;border:1px solid #d9e3e9;border-radius:10px;text-align:left;padding:8px;display:flex;flex-direction:column;align-items:stretch;gap:5px;overflow:hidden}
+#scheduleArea .day:hover{border-color:#087895}
+#scheduleArea .day.today{border:2px solid #087895}
+#scheduleArea .day.selected{background:#e4f3f6;border:2px solid #087895}
+#scheduleArea .day.other{opacity:.4}
+#scheduleArea .day-num{font-weight:750}
+#scheduleArea .day-events{font-size:11px;line-height:1.35;background:#dff0f5;color:#087895;border-radius:5px;padding:3px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#scheduleArea .day-members{display:flex;flex-wrap:wrap;gap:2px;max-height:34px;overflow:hidden}
+#scheduleArea .day-member{font-size:9px;line-height:1.2;border-radius:4px;padding:2px 3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+#scheduleArea .day-more{font-size:11px;color:#6b7280}
+#scheduleArea .field{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+#scheduleArea .field label{font-size:13px;color:#4b5d68;font-weight:650}
+#scheduleArea .field input,#scheduleArea .field textarea,#scheduleArea .field select{width:100%}
+#scheduleArea .field textarea{min-height:74px;resize:vertical}
+#scheduleArea .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#scheduleArea .full{grid-column:1/-1}
+#scheduleArea .attendee-choices{display:flex;flex-wrap:wrap;gap:8px}
+#scheduleArea .attendee-choice{background:var(--member-bg);color:var(--member-fg);border:1px solid var(--member-border);border-radius:999px;padding:8px 13px;opacity:.75}
+#scheduleArea .attendee-choice.selected{opacity:1;box-shadow:0 0 0 2px var(--member-border);font-weight:750}
+#scheduleArea .member-badges{display:inline-flex;flex-wrap:wrap;gap:5px;vertical-align:middle}
+#scheduleArea .member-badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+#scheduleArea .attendee-empty{color:#9ca3af;font-size:13px;padding:8px 0}
+#scheduleArea .job{border:1px solid #d9e3e9;border-radius:11px;padding:13px;margin-top:10px;background:#fff}
+#scheduleArea .job-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
+#scheduleArea .job-title{font-weight:750}
+#scheduleArea .job-meta{font-size:13px;color:#6b7280;margin-top:5px;line-height:1.6}
+#scheduleArea .job-actions{display:flex;gap:6px}
+#scheduleArea .job-actions button{font-size:12px;padding:7px 9px}
+#scheduleArea .empty{padding:22px;text-align:center;color:#9ca3af;background:#f7fafb;border-radius:10px;margin-top:10px}
+@media(max-width:1000px){#scheduleArea .content-grid{grid-template-columns:1fr}}
+@media(max-width:760px){#scheduleArea .day{min-height:78px;padding:5px;gap:3px}#scheduleArea .day-events{font-size:10px;padding:2px 3px}#scheduleArea .calendar{gap:4px}#scheduleArea .weekday{font-size:11px}#scheduleArea .day-more{font-size:10px}}
+@media(max-width:560px){#scheduleArea .day{min-height:62px}#scheduleArea .calendar{gap:3px}#scheduleArea .card{padding:13px}#scheduleArea .form-grid{grid-template-columns:1fr}#scheduleArea .full{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -149,7 +188,7 @@ input,select{border-color:#d4dfe5;border-radius:10px}
     <button id="homeTab"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></svg> Home</button>
     <button id="recordsTab" class="secondary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l3 3v13H5V4z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg> Transactions</button>
     <button id="dashboardTab" class="secondary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="M8 16v-5M13 16V7M18 16v-8"/></svg> Analytics &amp; Profit</button>
-    <button id="scheduleTab" class="secondary" onclick="location.href='schedule.html'"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg> Schedule</button>
+    <button id="scheduleTab" class="secondary" onclick="showPage('schedule')"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg> Schedule</button>
   </div></div>
 
   <section id="homeArea">
@@ -249,6 +288,38 @@ input,select{border-color:#d4dfe5;border-radius:10px}
       <p class="muted">ความยาวแท่งของค่าใช้จ่ายและกำไรเปรียบเทียบภายในประเภทเดียวกันระหว่างโครงการ</p>
     </div>
   </div>
+
+<section id="scheduleArea" class="hidden">
+ <div class="content-grid">
+  <section class="card">
+   <div class="topline">
+    <div class="row"><button id="prevMonth" class="secondary">‹</button><div id="monthTitle" class="month-title"></div><button id="nextMonth" class="secondary">›</button></div>
+    <button id="todayBtn" class="secondary">วันนี้</button>
+   </div>
+   <div class="calendar" id="calendar"></div>
+   <div class="muted" style="margin-top:12px">กดวันที่ต้องการเพื่อดูงาน หรือเลือกวันว่างเพื่อจองงานใหม่</div>
+  </section>
+  <section class="card">
+   <div class="topline"><h2 id="selectedTitle" style="font-size:18px;margin:0">รายการงาน</h2><span id="dayCount" class="muted"></span></div>
+   <div id="dayJobs"></div>
+   <div class="row" style="justify-content:space-between;margin-top:18px"><h3 id="formTitle" style="font-size:16px;margin:0">＋ จองวัน / เพิ่มงาน</h3><button id="cancelEdit" class="secondary" style="display:none">ยกเลิกแก้ไข</button></div>
+   <form id="jobForm" style="margin-top:12px">
+    <div class="form-grid">
+     <div class="field"><label for="workType">ประเภทงาน</label><select id="workType"><option>ประชุม (Meeting)</option><option>งานก่อสร้าง</option><option>นัดคุยกับลูกค้า</option><option>สำรวจหน้างาน</option><option>ติดตั้งระบบ</option><option>PM / ซ่อมบำรุง</option><option>ส่งมอบงาน</option><option>งานเอกสาร</option><option>งานทั่วไป</option><option>อื่น ๆ</option></select></div>
+     <div class="field"><label for="jobTitle">ชื่องาน *</label><input id="jobTitle" required maxlength="160" placeholder="เช่น ติดตั้ง Solar / PM Compressor"></div>
+     <div class="field full"><label for="workSite">สถานที่เข้าหน้างาน</label><input id="workSite" maxlength="200" placeholder="ชื่อลูกค้า / โรงงาน / พื้นที่"></div>
+     <div class="field"><label for="workDate">วันที่ *</label><input id="workDate" type="date" required></div>
+     <div class="field full"><label>สมาชิกที่ไปหน้างาน</label><div id="attendeeChoices" class="attendee-choices"></div></div>
+     <div class="field"><label for="startTime">เวลาเริ่ม</label><input id="startTime" type="time"></div>
+     <div class="field"><label for="endTime">เวลาสิ้นสุด</label><input id="endTime" type="time"></div>
+     <div class="field full"><label for="jobNote">รายละเอียด / หมายเหตุ</label><textarea id="jobNote" maxlength="1000" placeholder="รายละเอียดงาน อุปกรณ์ที่ต้องเตรียม หรือหมายเหตุ"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button id="saveJob" type="submit">บันทึกงาน</button><span id="formMsg" class="error"></span></div>
+   </form>
+  </section>
+ </div>
+</section>
+
 </main>
 
 
@@ -263,6 +334,134 @@ input,select{border-color:#d4dfe5;border-radius:10px}
 <script>
 
 let sb, user, projects=[], currentProject=null, mode="login";
+let teamMembers=[],monthCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1),selectedDate=toISODate(new Date()),jobs=[],editingId=null,scheduleReady=false,currentPage='home';
+const $=id=>document.getElementById(id);
+
+
+function toISODate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function parseDate(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function thaiDate(s){return parseDate(s).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+function timeRange(j){return [j.start_time?j.start_time.slice(0,5):'',j.end_time?j.end_time.slice(0,5):''].filter(Boolean).join(' – ')||'ไม่ระบุเวลา'}
+function changeMonth(n){monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+n,1);renderCalendar()}
+async function selectDate(date){selectedDate=date;$('workDate').value=date;resetForm(false);await loadJobs()}
+async function loadTeamMembers(){
+ if(!currentProject)return;
+ const {data,error}=await sb.rpc('get_project_members',{p_project_id:currentProject.id});
+ if(error){teamMembers=[];$('attendeeChoices').innerHTML='<div class="attendee-empty">โหลดรายชื่อสมาชิกไม่สำเร็จ: '+esc(error.message)+'</div>';return}
+ teamMembers=data||[];
+ renderAttendeeChoices([]);
+}
+const memberPalette=[['#dbeafe','#1e40af','#60a5fa'],['#dcfce7','#166534','#4ade80'],['#fce7f3','#9d174d','#f472b6'],['#fef3c7','#92400e','#fbbf24'],['#ede9fe','#5b21b6','#a78bfa'],['#cffafe','#155e75','#22d3ee'],['#ffedd5','#9a3412','#fb923c'],['#f3e8ff','#6b21a8','#c084fc']];
+function memberColor(id){const ordered=[...teamMembers].sort((a,b)=>String(a.email||'').localeCompare(String(b.email||'')));const index=ordered.findIndex(m=>m.user_id===id);return memberPalette[(index<0?0:index)%memberPalette.length]}
+function memberBadges(ids){
+ const members=(ids||[]).map(id=>teamMembers.find(m=>m.user_id===id)).filter(Boolean);
+ if(!members.length)return '';
+ return '<span class="member-badges">'+members.map(m=>{const p=memberColor(m.user_id);return '<span class="member-badge" style="background:'+p[0]+';color:'+p[1]+';border:1px solid '+p[2]+'">'+esc(m.email)+'</span>'}).join('')+'</span>';
+}
+function renderAttendeeChoices(selectedIds=[]){
+ const selected=new Set(selectedIds);
+ if(!teamMembers.length){$('attendeeChoices').innerHTML='<div class="attendee-empty">ไม่พบสมาชิกใน Project นี้</div>';return}
+ $('attendeeChoices').innerHTML=teamMembers.map(m=>{const p=memberColor(m.user_id);return '<button type="button" class="attendee-choice '+(selected.has(m.user_id)?'selected':'')+'" style="--member-bg:'+p[0]+';--member-fg:'+p[1]+';--member-border:'+p[2]+'" data-member="'+esc(m.user_id)+'" aria-pressed="'+selected.has(m.user_id)+'">'+(selected.has(m.user_id)?'✓ ':'')+esc(m.email)+'</button>'}).join('');
+ $('attendeeChoices').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>{
+  const id=b.dataset.member;
+  const ids=Array.from($('attendeeChoices').querySelectorAll('[data-member].selected')).map(x=>x.dataset.member);
+  const next=ids.includes(id)?ids.filter(x=>x!==id):[...ids,id];
+  renderAttendeeChoices(next);
+ });
+}
+function selectedAttendeeIds(){
+ return Array.from($('attendeeChoices').querySelectorAll('[data-member].selected')).map(b=>b.dataset.member);
+}
+function attendeeLabel(j){
+ const ids=j.attendee_ids||[];
+ if(ids.length)return ids.map(id=>teamMembers.find(m=>m.user_id===id)?.email||'สมาชิกทีม').join(', ');
+ return j.attendees||'ยังไม่ระบุผู้เข้าหน้างาน';
+}
+async function loadJobs(){
+ if(!currentProject)return;
+ const start=toISODate(monthCursor),end=toISODate(new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,0));
+ const {data,error}=await sb.from('work_schedules').select('*').eq('project_id',currentProject.id).gte('work_date',start).lte('work_date',end).order('start_time',{ascending:true});
+ if(error){$('dayJobs').innerHTML='<div class="empty">โหลดตารางงานไม่สำเร็จ: '+esc(error.message)+'</div>';return}
+ jobs=data||[];
+ renderCalendar();renderDayJobs();
+}
+function renderCalendar(){
+ $('monthTitle').textContent=monthCursor.toLocaleDateString('th-TH',{month:'long',year:'numeric'});
+ const first=new Date(monthCursor.getFullYear(),monthCursor.getMonth(),1),offset=first.getDay(),days=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,0).getDate();
+ const prevDays=new Date(monthCursor.getFullYear(),monthCursor.getMonth(),0).getDate();
+ const today=toISODate(new Date());let out=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'].map(x=>'<div class="weekday">'+x+'</div>').join('');
+ for(let i=0;i<42;i++){
+  let dateObj,other=false;
+  if(i<offset){dateObj=new Date(monthCursor.getFullYear(),monthCursor.getMonth()-1,prevDays-offset+i+1);other=true}
+  else if(i>=offset+days){dateObj=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,i-offset-days+1);other=true}
+  else dateObj=new Date(monthCursor.getFullYear(),monthCursor.getMonth(),i-offset+1);
+  const iso=toISODate(dateObj),items=jobs.filter(j=>j.work_date===iso);
+  const cls=['day',other?'other':'',iso===today?'today':'',iso===selectedDate?'selected':''].filter(Boolean).join(' ');
+  out+='<button type="button" class="'+cls+'" data-date="'+iso+'"><span class="day-num">'+dateObj.getDate()+'</span>'+items.slice(0,2).map(j=>{const people=(j.attendee_ids||[]).map(id=>teamMembers.find(m=>m.user_id===id)).filter(Boolean);const badges=people.length?'<span class="day-members">'+people.map(m=>{const p=memberColor(m.user_id);const label=(m.email||'สมาชิก').split('@')[0];return '<span class="day-member" title="'+esc(m.email)+'" style="background:'+p[0]+';color:'+p[1]+'">'+esc(label)+'</span>'}).join('')+'</span>':'';return '<span class="day-events" title="'+esc((j.work_type||'งานทั่วไป')+' · '+j.job_title)+'">'+esc(j.work_type||'งานทั่วไป')+' · '+esc(j.job_title)+'</span>'+badges}).join('')+(items.length>2?'<span class="day-more">+'+(items.length-2)+' งาน</span>':'')+'</button>';
+ }
+ $('calendar').innerHTML=out;
+ $('calendar').querySelectorAll('[data-date]').forEach(b=>b.onclick=()=>{const d=b.dataset.date;if(parseDate(d).getMonth()!==monthCursor.getMonth()){monthCursor=new Date(parseDate(d).getFullYear(),parseDate(d).getMonth(),1)}selectDate(d)});
+}
+function renderDayJobs(){
+ const list=jobs.filter(j=>j.work_date===selectedDate);
+ $('selectedTitle').textContent=thaiDate(selectedDate);$('dayCount').textContent=list.length+' งาน';
+ if(!list.length){$('dayJobs').innerHTML='<div class="empty">วันนี้ยังไม่มีงาน<br><span class="muted">เพิ่มงานได้จากแบบฟอร์มด้านล่าง</span></div>';return}
+ $('dayJobs').innerHTML=list.map(j=>'<article class="job"><div class="job-head"><div><div class="job-title">'+esc(j.job_title)+'</div><div class="job-meta">'+(j.work_site?'📍 '+esc(j.work_site)+'<br>':'')+'🕒 '+esc(timeRange(j))+'<br>👷 '+(j.attendee_ids?.length?memberBadges(j.attendee_ids):esc(attendeeLabel(j)))+(j.note?'<br>📝 '+esc(j.note):'')+'</div></div><div class="job-actions"><button type="button" class="secondary" data-edit="'+j.id+'">แก้ไข</button><button type="button" class="danger" data-delete="'+j.id+'">ลบ</button></div></div></article>').join('');
+ $('dayJobs').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editJob(b.dataset.edit));
+ $('dayJobs').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteJob(b.dataset.delete));
+}
+function resetForm(clearMessage=true){
+ editingId=null;$('jobForm').reset();renderAttendeeChoices([]);$('workDate').value=selectedDate;$('formTitle').textContent='＋ จองวัน / เพิ่มงาน';$('saveJob').textContent='บันทึกงาน';$('cancelEdit').style.display='none';if(clearMessage)$('formMsg').textContent='';
+}
+function editJob(id){
+ const j=jobs.find(x=>x.id===id);if(!j)return;
+ editingId=id;selectedDate=j.work_date;$('workDate').value=j.work_date;$('workType').value=j.work_type||'งานทั่วไป';$('jobTitle').value=j.job_title||'';$('workSite').value=j.work_site||'';renderAttendeeChoices(j.attendee_ids||[]);$('startTime').value=j.start_time||'';$('endTime').value=j.end_time||'';$('jobNote').value=j.note||'';
+ $('formTitle').textContent='✏️ แก้ไขงาน';$('saveJob').textContent='บันทึกการแก้ไข';$('cancelEdit').style.display='inline-block';renderCalendar();renderDayJobs();
+}
+async function saveJob(e){
+ e.preventDefault();$('formMsg').textContent='';
+ if(!currentProject)return;
+ const work_date=$('workDate').value,job_title=$('jobTitle').value.trim(),start_time=$('startTime').value||null,end_time=$('endTime').value||null;
+ if(!work_date||!job_title){$('formMsg').textContent='กรุณากรอกวันที่และชื่องาน';return}
+ if(start_time&&end_time&&end_time<start_time){$('formMsg').textContent='เวลาสิ้นสุดต้องไม่น้อยกว่าเวลาเริ่ม';return}
+ const payload={project_id:currentProject.id,work_date,job_title,work_type:$('workType').value,work_site:$('workSite').value.trim()||null,start_time,end_time,attendee_ids:selectedAttendeeIds(),attendees:null,note:$('jobNote').value.trim()||null};
+ $('saveJob').disabled=true;
+ let result;
+ if(editingId)result=await sb.from('work_schedules').update(payload).eq('id',editingId).select().single();
+ else result=await sb.from('work_schedules').insert({...payload,created_by:user.id}).select().single();
+ $('saveJob').disabled=false;
+ if(result.error){$('formMsg').textContent='บันทึกไม่สำเร็จ: '+result.error.message;return}
+ selectedDate=work_date;monthCursor=new Date(parseDate(work_date).getFullYear(),parseDate(work_date).getMonth(),1);resetForm();await loadJobs();
+}
+async function deleteJob(id){
+ const j=jobs.find(x=>x.id===id);if(!j||!confirm('ยืนยันลบงาน "'+j.job_title+'" ใช่หรือไม่?'))return;
+ const {error}=await sb.from('work_schedules').delete().eq('id',id);
+ if(error){alert('ลบไม่สำเร็จ: '+error.message);return}
+ await loadJobs();
+}
+
+async function initSchedule(){
+ if(scheduleReady)return;
+ scheduleReady=true;
+ $('prevMonth').onclick=()=>changeMonth(-1);
+ $('nextMonth').onclick=()=>changeMonth(1);
+ $('todayBtn').onclick=()=>{const d=new Date();monthCursor=new Date(d.getFullYear(),d.getMonth(),1);selectDate(toISODate(d))};
+ $('jobForm').onsubmit=saveJob;
+ $('cancelEdit').onclick=()=>resetForm();
+ await loadScheduleProject();
+}
+async function loadScheduleProject(){
+ if(!currentProject){
+  $('calendar').innerHTML='<div class="empty">ยังไม่มี Project กรุณาสร้าง Project ที่หน้า Home ก่อน</div>';
+  $('dayJobs').innerHTML='';
+  $('attendeeChoices').innerHTML='';
+  return;
+ }
+ teamMembers=[];
+ await loadTeamMembers();
+ await loadJobs();
+}
 
 function money(n){return new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:2}).format(n||0)}
 function signedMoney(n){const value=Number(n)||0;return (value>0?'+':value<0?'-':'')+money(Math.abs(value))}
@@ -297,6 +496,7 @@ function init(){
   document.getElementById('homeTab').onclick=()=>showPage('home');
   document.getElementById('recordsTab').onclick=()=>showPage('records');
   document.getElementById('dashboardTab').onclick=()=>showPage('dashboard');
+  document.getElementById('scheduleTab').onclick=()=>showPage('schedule');
   document.getElementById('projectSelect').onchange=()=>selectProject(document.getElementById('projectSelect').value);
   sb.auth.onAuthStateChange((_e,s)=>{user=s?.user||null; renderAuth(); if(user) loadProjects();});
   sb.auth.getSession().then(({data})=>{user=data.session?.user||null;renderAuth();if(user)loadProjects()});
@@ -393,15 +593,19 @@ async function deleteProject(){
 }
 
 function showPage(page){
-  const home=page==='home',dashboard=page==='dashboard',records=page==='records';
+  currentPage=page;
+  const home=page==='home',dashboard=page==='dashboard',records=page==='records',schedule=page==='schedule';
   document.getElementById('homeArea').classList.toggle('hidden',!home);
   document.getElementById('projectArea').classList.toggle('hidden',!records);
   document.getElementById('dashboardArea').classList.toggle('hidden',!dashboard);
+  document.getElementById('scheduleArea').classList.toggle('hidden',!schedule);
   document.getElementById('homeTab').classList.toggle('secondary',!home);
   document.getElementById('recordsTab').classList.toggle('secondary',!records);
   document.getElementById('dashboardTab').classList.toggle('secondary',!dashboard);
+  document.getElementById('scheduleTab').classList.toggle('secondary',!schedule);
   if(home)renderHome();
   if(dashboard)renderDashboard();
+  if(schedule)initSchedule();
 }
 
 async function selectProject(id){
@@ -409,6 +613,7 @@ async function selectProject(id){
   document.getElementById('projectName').textContent=currentProject.name;
   await refresh();
   renderHome();
+  if(scheduleReady && currentPage==='schedule')await loadScheduleProject();
 }
 async function refresh(){
   const {data,error}=await sb.from('transactions').select('*').eq('project_id',currentProject.id).order('created_at',{ascending:false});
