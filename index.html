@@ -26,63 +26,69 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
 
 .home-hero{background:linear-gradient(125deg,#111827,#243b63);color:#fff;border-radius:16px;padding:26px;margin-bottom:16px;display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap}.home-hero h2{font-size:26px;margin:0 0 6px}.home-hero p{margin:0;color:#d1d5db}.home-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}.home-action{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;text-align:left;color:#172033;min-height:118px}.home-action strong{display:block;font-size:16px;margin:8px 0 4px}.home-action span{font-size:13px;color:#6b7280}.home-action .ico{font-size:25px}.home-section-title{margin:20px 0 10px;font-size:17px}.home-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.home-project{border:1px solid #e5e7eb;border-radius:12px;padding:14px}.home-project b{display:block;margin-bottom:6px}.home-project small{color:#6b7280}.home-project .profit{font-weight:750;margin-top:8px}@media(max-width:650px){.home-actions{grid-template-columns:1fr}.home-projects{grid-template-columns:1fr}.home-hero h2{font-size:22px}}
 
-/* ET Works dashboard refresh */
-body{background:#f3f6f8;color:#172b3a}
-header{position:fixed;z-index:20;left:5.4%;top:16px;width:290px;height:56px;padding:0;background:transparent;color:#172b3a;justify-content:flex-start;gap:12px}
-header h1{font-size:22px;font-weight:750;letter-spacing:-.4px}
-header h1:before{content:"ET";display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;margin-right:12px;border-radius:13px;background:#087895;color:#fff;font-size:17px;vertical-align:middle}
+
+/* Refined ET Works application layout */
+:root{--brand:#087895;--brand-soft:#e1f1f5;--ink:#172b3a;--muted:#718391;--line:#dce5ea;--surface:#fff;--page:#f3f6f8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:Inter,"Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:fixed;z-index:30;left:5.4%;top:18px;width:270px;display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:0;background:transparent;color:var(--ink)}
+.brand-mark{width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;border-radius:13px;background:var(--brand);color:#fff;font-weight:800;font-size:17px}
+.brand-copy{display:flex;flex-direction:column;line-height:1.25}
+.brand-copy strong{font-size:21px;font-weight:800;letter-spacing:-.4px}
+.brand-copy span{font-size:13px;color:var(--muted);margin-top:3px}
 #userBox{display:none}
-.wrap{max-width:none;margin:0 5.5% 0 23%;padding:12px 0 40px}
-.page-tabs{position:fixed;z-index:19;left:5.4%;top:88px;width:290px;padding:0;background:transparent;border:0;box-shadow:none}
+.wrap{max-width:none;margin:0 5.4% 0 23.2%;padding:14px 0 48px}
+.page-tabs{position:fixed;z-index:25;left:5.4%;top:94px;width:290px;padding:0;background:transparent;border:0;box-shadow:none}
 .page-tabs .row{display:flex;flex-direction:column;align-items:stretch;gap:5px}
 .page-tabs button{width:100%;min-height:48px;text-align:left;padding:12px 16px;background:transparent;color:#607482;border-radius:12px;font-weight:650}
-.page-tabs button:not(.secondary){background:#dff0f5;color:#087895}
-.page-tabs button.secondary:hover{background:#e8f1f4;color:#087895}
-#homeArea:before{content:"ยินดีต้อนรับสู่ ET Works";display:block;font-size:30px;line-height:1.25;font-weight:800;color:#142b3b;margin:0 0 4px}
-#homeArea:after{content:"จัดการการเงิน ติดตามผลประกอบการ และวางแผนงานของทีมในที่เดียว";display:block;color:#718391;font-size:16px;margin-top:-4px;margin-bottom:28px}
-.home-hero{display:none}
-.grid{gap:14px}
-.stat{background:#fff;border:1px solid #d9e3e9;border-radius:18px;padding:19px 20px;min-height:108px;color:#70808c}
-.stat b{font-size:29px;color:#142b3b;margin-top:10px}
+.page-tabs button:not(.secondary){background:var(--brand-soft);color:var(--brand)}
+.page-tabs button.secondary:hover{background:#e9f1f4;color:var(--brand)}
+.home-hero{display:block;background:transparent;color:var(--ink);padding:0;margin:0 0 28px;border-radius:0}
+.home-hero h2{font-size:30px;line-height:1.3;font-weight:800;letter-spacing:-.6px;margin:0 0 5px;color:var(--ink)}
+.home-hero p{font-size:16px;color:var(--muted);margin:0}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px;min-height:110px;color:var(--muted)}
+.stat b{display:block;font-size:29px;line-height:1.2;color:var(--ink);margin-top:10px;font-weight:800}
 #homeProfit{color:#07966d}
-.card{border:1px solid #d9e3e9;border-radius:18px;box-shadow:0 8px 22px #1934470a}
-.home-section-title{font-size:19px;color:#172b3a;margin-top:25px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 7px 22px #1934470a}
+.home-section-title{font-size:19px;color:var(--ink);margin:26px 0 12px}
 .home-actions{gap:14px}
-.home-action{border-radius:16px;min-height:130px}
-#homeProjectList{margin-top:12px}
-.empty-project-panel{display:none;background:#fff;border:1px solid #d9e3e9;border-radius:18px;padding:28px 32px;margin-top:25px;box-shadow:0 8px 22px #1934470a}
-.empty-project-panel h2{font-size:23px;margin:0 0 8px;color:#172b3a}
-.empty-project-panel p{color:#718391;margin:0 0 18px}
-.empty-project-panel button{background:#087895;padding:14px 20px;border-radius:12px;font-weight:700}
+.home-action{border-radius:15px;min-height:126px}
+.home-projects{margin-top:12px}
+.empty-project-panel{display:none;background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px 32px;margin-top:25px;box-shadow:0 7px 22px #1934470a}
+.empty-project-panel h2{font-size:23px;margin:0 0 8px;color:var(--ink)}
+.empty-project-panel p{color:var(--muted);margin:0 0 18px}
+.empty-project-panel button{background:var(--brand);padding:13px 20px;border-radius:11px;font-weight:700}
 #app.no-projects .home-actions,#app.no-projects .home-section-title,#app.no-projects #homeProjectList{display:none}
 #app.no-projects .empty-project-panel{display:block}
-#projectArea,#dashboardArea{padding-top:12px}
-#projectArea .card,#dashboardArea .card{margin-bottom:16px}
-#projectSelect{min-width:220px}
-button{background:#087895}
-button.secondary{background:#e8eef1;color:#344b5a}
+button{background:var(--brand);border-radius:10px}
+button.secondary{background:#edf2f4;color:#344b5a}
 button.danger{background:#b91c1c}
-input,select{border-color:#d4dfe5;border-radius:10px}
-@media(max-width:900px){
- header{left:18px;top:12px;width:auto}
- .wrap{margin:82px 18px 24px;padding:0}
- .page-tabs{position:sticky;top:0;left:auto;width:100%;margin:0 0 18px;background:#f3f6f8;padding:8px 0}
+input,select{border:1px solid #d4dfe5;border-radius:10px}
+#projectArea,#dashboardArea{padding-top:14px}
+#projectArea .card,#dashboardArea .card{margin-bottom:16px}
+@media(max-width:1100px){.wrap{margin-left:27%;margin-right:4%}.page-tabs{width:22%}}
+@media(max-width:800px){
+ header{position:relative;left:auto;top:auto;width:auto;padding:12px 18px}
+ .wrap{margin:0 18px 24px;padding:0}
+ .page-tabs{position:sticky;top:0;left:auto;width:100%;margin:0 0 18px;background:var(--page);padding:8px 0}
  .page-tabs .row{flex-direction:row;overflow-x:auto}
- .page-tabs button{width:auto;white-space:nowrap;min-width:unset}
-}
-@media(max-width:560px){
- #homeArea:before{font-size:25px}
- #homeArea:after{font-size:14px}
+ .page-tabs button{width:auto;white-space:nowrap;min-width:max-content}
+ .home-hero h2{font-size:25px}
  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
- .stat{padding:14px;min-height:96px}
+}
+@media(max-width:520px){
+ .home-hero p{font-size:14px}
+ .grid{gap:9px}
+ .stat{padding:14px;min-height:94px}
  .stat b{font-size:22px}
  .empty-project-panel{padding:22px}
+ .home-actions{grid-template-columns:1fr}
 }
-
 </style>
 </head>
 <body>
-<header><h1>ET Works</h1><div id="userBox"></div></header>
+<header><div class="brand-mark">ET</div><div class="brand-copy"><strong>ET Works</strong><span>งาน เงิน และทีม</span></div><div id="userBox"></div></header>
 
 <div id="auth" class="auth card">
   <h2 id="authTitle">เข้าสู่ระบบ</h2>
@@ -105,7 +111,7 @@ input,select{border-color:#d4dfe5;border-radius:10px}
   </div></div>
 
   <section id="homeArea">
-    <div class="home-hero"><div><h2>ยินดีต้อนรับสู่ ET Works</h2><p>จัดการการเงิน ติดตามผลประกอบการ และวางแผนงานของทีมในที่เดียว</p></div><div style="font-size:42px">💼</div></div>
+    <div class="home-hero"><div><h2>ยินดีต้อนรับสู่ ET Works</h2><p>จัดการการเงิน ติดตามผลประกอบการ และวางแผนงานของทีมในที่เดียว</p></div></div>
     <div class="grid">
       <div class="stat">รายรับรวม<b id="homeIncome">฿0</b></div>
       <div class="stat">ค่าใช้จ่ายรวม<b id="homeExpense">฿0</b></div>
