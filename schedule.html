@@ -163,7 +163,7 @@ function renderDayJobs(){
  $('dayJobs').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteJob(b.dataset.delete));
 }
 function resetForm(clearMessage=true){
- editingId=null;$('jobForm').reset();$('workDate').value=selectedDate;$('formTitle').textContent='＋ จองวัน / เพิ่มงาน';$('saveJob').textContent='บันทึกงาน';$('cancelEdit').style.display='none';if(clearMessage)$('formMsg').textContent='';
+ editingId=null;$('jobForm').reset();renderAttendeeChoices([]);$('workDate').value=selectedDate;$('formTitle').textContent='＋ จองวัน / เพิ่มงาน';$('saveJob').textContent='บันทึกงาน';$('cancelEdit').style.display='none';if(clearMessage)$('formMsg').textContent='';
 }
 function editJob(id){
  const j=jobs.find(x=>x.id===id);if(!j)return;
