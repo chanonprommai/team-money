@@ -53,7 +53,8 @@ button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13
    <div class="row" style="justify-content:space-between;margin-top:18px"><h3 id="formTitle" style="font-size:16px;margin:0">＋ จองวัน / เพิ่มงาน</h3><button id="cancelEdit" class="secondary" style="display:none">ยกเลิกแก้ไข</button></div>
    <form id="jobForm" style="margin-top:12px">
     <div class="form-grid">
-     <div class="field full"><label for="jobTitle">ชื่องาน *</label><input id="jobTitle" required maxlength="160" placeholder="เช่น ติดตั้ง Solar / PM Compressor"></div>
+     <div class="field"><label for="workType">ประเภทงาน</label><select id="workType"><option>ประชุม (Meeting)</option><option>งานก่อสร้าง</option><option>นัดคุยกับลูกค้า</option><option>สำรวจหน้างาน</option><option>ติดตั้งระบบ</option><option>PM / ซ่อมบำรุง</option><option>ส่งมอบงาน</option><option>งานเอกสาร</option><option>งานทั่วไป</option><option>อื่น ๆ</option></select></div>
+     <div class="field"><label for="jobTitle">ชื่องาน *</label><input id="jobTitle" required maxlength="160" placeholder="เช่น ติดตั้ง Solar / PM Compressor"></div>
      <div class="field full"><label for="workSite">สถานที่เข้าหน้างาน</label><input id="workSite" maxlength="200" placeholder="ชื่อลูกค้า / โรงงาน / พื้นที่"></div>
      <div class="field"><label for="workDate">วันที่ *</label><input id="workDate" type="date" required></div>
      <div class="field full"><label>สมาชิกที่ไปหน้างาน</label><div id="attendeeChoices" class="attendee-choices"></div></div>
@@ -148,7 +149,7 @@ function renderCalendar(){
   else dateObj=new Date(monthCursor.getFullYear(),monthCursor.getMonth(),i-offset+1);
   const iso=toISODate(dateObj),items=jobs.filter(j=>j.work_date===iso);
   const cls=['day',other?'other':'',iso===today?'today':'',iso===selectedDate?'selected':''].filter(Boolean).join(' ');
-  out+='<button type="button" class="'+cls+'" data-date="'+iso+'"><span class="day-num">'+dateObj.getDate()+'</span>'+items.slice(0,2).map(j=>{const people=(j.attendee_ids||[]).map(id=>teamMembers.find(m=>m.user_id===id)).filter(Boolean);const badges=people.length?'<span class="day-members">'+people.map(m=>{const p=memberColor(m.user_id);const label=(m.email||'สมาชิก').split('@')[0];return '<span class="day-member" title="'+esc(m.email)+'" style="background:'+p[0]+';color:'+p[1]+'">'+esc(label)+'</span>'}).join('')+'</span>':'';return '<span class="day-events" title="'+esc(j.job_title)+'">'+esc(j.job_title)+'</span>'+badges}).join('')+(items.length>2?'<span class="day-more">+'+(items.length-2)+' งาน</span>':'')+'</button>';
+  out+='<button type="button" class="'+cls+'" data-date="'+iso+'"><span class="day-num">'+dateObj.getDate()+'</span>'+items.slice(0,2).map(j=>{const people=(j.attendee_ids||[]).map(id=>teamMembers.find(m=>m.user_id===id)).filter(Boolean);const badges=people.length?'<span class="day-members">'+people.map(m=>{const p=memberColor(m.user_id);const label=(m.email||'สมาชิก').split('@')[0];return '<span class="day-member" title="'+esc(m.email)+'" style="background:'+p[0]+';color:'+p[1]+'">'+esc(label)+'</span>'}).join('')+'</span>':'';return '<span class="day-events" title="'+esc((j.work_type||'งานทั่วไป')+' · '+j.job_title)+'">'+esc(j.work_type||'งานทั่วไป')+' · '+esc(j.job_title)+'</span>'+badges}).join('')+(items.length>2?'<span class="day-more">+'+(items.length-2)+' งาน</span>':'')+'</button>';
  }
  $('calendar').innerHTML=out;
  $('calendar').querySelectorAll('[data-date]').forEach(b=>b.onclick=()=>{const d=b.dataset.date;if(parseDate(d).getMonth()!==monthCursor.getMonth()){monthCursor=new Date(parseDate(d).getFullYear(),parseDate(d).getMonth(),1)}selectDate(d)});
@@ -166,7 +167,7 @@ function resetForm(clearMessage=true){
 }
 function editJob(id){
  const j=jobs.find(x=>x.id===id);if(!j)return;
- editingId=id;selectedDate=j.work_date;$('workDate').value=j.work_date;$('jobTitle').value=j.job_title||'';$('workSite').value=j.work_site||'';renderAttendeeChoices(j.attendee_ids||[]);$('startTime').value=j.start_time||'';$('endTime').value=j.end_time||'';$('jobNote').value=j.note||'';
+ editingId=id;selectedDate=j.work_date;$('workDate').value=j.work_date;$('workType').value=j.work_type||'งานทั่วไป';$('jobTitle').value=j.job_title||'';$('workSite').value=j.work_site||'';renderAttendeeChoices(j.attendee_ids||[]);$('startTime').value=j.start_time||'';$('endTime').value=j.end_time||'';$('jobNote').value=j.note||'';
  $('formTitle').textContent='✏️ แก้ไขงาน';$('saveJob').textContent='บันทึกการแก้ไข';$('cancelEdit').style.display='inline-block';renderCalendar();renderDayJobs();
 }
 async function saveJob(e){
@@ -175,7 +176,7 @@ async function saveJob(e){
  const work_date=$('workDate').value,job_title=$('jobTitle').value.trim(),start_time=$('startTime').value||null,end_time=$('endTime').value||null;
  if(!work_date||!job_title){$('formMsg').textContent='กรุณากรอกวันที่และชื่องาน';return}
  if(start_time&&end_time&&end_time<start_time){$('formMsg').textContent='เวลาสิ้นสุดต้องไม่น้อยกว่าเวลาเริ่ม';return}
- const payload={project_id:currentProject.id,work_date,job_title,work_site:$('workSite').value.trim()||null,start_time,end_time,attendee_ids:selectedAttendeeIds(),attendees:null,note:$('jobNote').value.trim()||null};
+ const payload={project_id:currentProject.id,work_date,job_title,work_type:$('workType').value,work_site:$('workSite').value.trim()||null,start_time,end_time,attendee_ids:selectedAttendeeIds(),attendees:null,note:$('jobNote').value.trim()||null};
  $('saveJob').disabled=true;
  let result;
  if(editingId)result=await sb.from('work_schedules').update(payload).eq('id',editingId).select().single();
