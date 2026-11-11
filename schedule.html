@@ -38,12 +38,6 @@ button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13
 <header><h1>📅 ET Works · ตารางงาน</h1><div class="row"><span id="userEmail" class="muted" style="color:#d1d5db"></span><button class="secondary" onclick="location.href='index.html'">← กลับหน้าหลัก</button></div></header>
 <div id="login" class="card" style="display:none"><h2>กรุณาเข้าสู่ระบบ</h2><p class="muted">เข้าสู่ระบบผ่าน ET Works ก่อน แล้วกลับมาหน้าตารางงานอีกครั้ง</p><button onclick="location.href='index.html'">ไปหน้าเข้าสู่ระบบ</button></div>
 <main id="app" class="wrap">
- <section class="card">
-  <div class="row">
-   <div class="field" style="max-width:360px"><label>Project</label><select id="projectSelect"></select></div>
-   <div class="muted" id="projectHint">ตารางงานจะแยกตาม Project ที่เลือก</div>
-  </div>
- </section>
  <div class="content-grid">
   <section class="card">
    <div class="topline">
@@ -90,14 +84,13 @@ async function init(){
  $('userEmail').textContent=user.email||'';
  $('prevMonth').onclick=()=>changeMonth(-1);$('nextMonth').onclick=()=>changeMonth(1);
  $('todayBtn').onclick=()=>{const d=new Date();monthCursor=new Date(d.getFullYear(),d.getMonth(),1);selectDate(toISODate(d))};
- $('projectSelect').onchange=async()=>{currentProject=projects.find(p=>p.id===$('projectSelect').value)||null;await loadTeamMembers();loadJobs()};
+ 
  $('jobForm').onsubmit=saveJob;$('cancelEdit').onclick=resetForm;
  const {data,error}=await sb.from('projects').select('id,name,created_by').order('created_at',{ascending:true});
- if(error){$('projectHint').textContent='โหลด Project ไม่สำเร็จ: '+error.message;return}
+ if(error){$('calendar').innerHTML='<div class="empty">โหลดข้อมูลโครงการไม่สำเร็จ: '+esc(error.message)+'</div>';return}
  projects=data||[];
- if(!projects.length){$('projectHint').textContent='ยังไม่มี Project กรุณาสร้าง Project ที่หน้าหลักก่อน';return}
- $('projectSelect').innerHTML=projects.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');
- currentProject=projects[0];$('projectSelect').value=currentProject.id;
+ if(!projects.length){$('calendar').innerHTML='<div class="empty">ยังไม่มี Project กรุณาสร้าง Project ที่หน้าหลักก่อน</div>';return}
+ currentProject=projects[0];
  await loadTeamMembers();await loadJobs();
 }
 function changeMonth(n){monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+n,1);renderCalendar()}
@@ -105,7 +98,7 @@ async function selectDate(date){selectedDate=date;$('workDate').value=date;reset
 async function loadTeamMembers(){
  if(!currentProject)return;
  const {data,error}=await sb.rpc('get_project_members',{p_project_id:currentProject.id});
- if(error){$('projectHint').textContent='โหลดรายชื่อสมาชิกไม่สำเร็จ: '+error.message;teamMembers=[];return}
+ if(error){teamMembers=[];$('attendeeChoices').innerHTML='<div class="attendee-empty">โหลดรายชื่อสมาชิกไม่สำเร็จ: '+esc(error.message)+'</div>';return}
  teamMembers=data||[];
  renderAttendeeChoices([]);
 }
@@ -140,8 +133,8 @@ async function loadJobs(){
  $('projectHint').textContent='กำลังโหลดตารางงาน…';
  const start=toISODate(monthCursor),end=toISODate(new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,0));
  const {data,error}=await sb.from('work_schedules').select('*').eq('project_id',currentProject.id).gte('work_date',start).lte('work_date',end).order('start_time',{ascending:true});
- if(error){$('projectHint').textContent='โหลดตารางงานไม่สำเร็จ: '+error.message;return}
- jobs=data||[];$('projectHint').textContent='ตารางงานของ Project: '+currentProject.name;
+ if(error){$('dayJobs').innerHTML='<div class="empty">โหลดตารางงานไม่สำเร็จ: '+esc(error.message)+'</div>';return}
+ jobs=data||[];
  renderCalendar();renderDayJobs();
 }
 function renderCalendar(){
