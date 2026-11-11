@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -81,6 +81,25 @@ input,select{border-color:#d4dfe5;border-radius:10px}
  .empty-project-panel{padding:22px}
 }
 
+/* Sidebar sizing and responsive navigation */
+.page-tabs{width:290px!important;min-width:290px!important;max-width:290px!important;left:5.4%!important;box-sizing:border-box!important}
+.page-tabs .row{width:100%!important;min-width:0!important;box-sizing:border-box!important}
+.page-tabs button{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;justify-content:flex-start}
+@media(min-width:901px){
+ .wrap{margin-left:23%!important}
+ .page-tabs{left:5.4%!important;width:290px!important}
+}
+@media(max-width:900px){
+ .page-tabs{position:relative!important;left:auto!important;top:auto!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0 0 18px!important;padding:0!important}
+ .page-tabs .row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important}
+ .page-tabs button{width:100%!important;min-width:0!important;white-space:normal!important;padding:12px!important}
+ .wrap{margin:82px 18px 24px!important;padding:0!important}
+}
+@media(max-width:480px){
+ .page-tabs .row{grid-template-columns:1fr 1fr!important}
+ .page-tabs button{font-size:13px!important;gap:7px!important}
+ .page-tabs .ui-icon{width:17px;height:17px;flex-basis:17px}
+}
 </style>
 </head>
 <body>
@@ -100,10 +119,10 @@ input,select{border-color:#d4dfe5;border-radius:10px}
 
 <main id="app" class="wrap hidden">
   <div class="card page-tabs"><div class="row">
-    <button id="homeTab"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></svg> หน้าหลัก</button>
-    <button id="recordsTab" class="secondary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l3 3v13H5V4z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg> รายการ</button>
-    <button id="dashboardTab" class="secondary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="M8 16v-5M13 16V7M18 16v-8"/></svg> กราฟและกำไร</button>
-    <button id="scheduleTab" class="secondary" onclick="location.href='schedule.html'"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg> ตารางงาน</button>
+    <button id="homeTab"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></svg> Home</button>
+    <button id="recordsTab" class="secondary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l3 3v13H5V4z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg> Transactions</button>
+    <button id="dashboardTab" class="secondary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="M8 16v-5M13 16V7M18 16v-8"/></svg> Analytics &amp; Profit</button>
+    <button id="scheduleTab" class="secondary" onclick="location.href='schedule.html'"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg> Schedule</button>
   </div></div>
 
   <section id="homeArea">
