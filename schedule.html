@@ -25,7 +25,7 @@ button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13
 .day-more{font-size:11px;color:#6b7280}.content-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);gap:16px;align-items:start}
 .field{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}.field label{font-size:13px;color:#4b5563;font-weight:650}
 .field input,.field textarea{width:100%}.field textarea{min-height:74px;resize:vertical}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.attendee-choices{display:flex;flex-wrap:wrap;gap:8px}.attendee-choice{background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:999px;padding:8px 13px}.attendee-choice.selected{background:#dbeafe;color:#1d4ed8;border:1px solid #3b82f6;font-weight:700}.attendee-empty{color:#9ca3af;font-size:13px;padding:8px 0}.full{grid-column:1/-1}
 .job{border:1px solid #e5e7eb;border-radius:11px;padding:13px;margin-top:10px}.job-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
 .job-title{font-weight:750}.job-meta{font-size:13px;color:#6b7280;margin-top:5px;line-height:1.6}.job-actions{display:flex;gap:6px}.job-actions button{font-size:12px;padding:7px 9px}
 .empty{padding:22px;text-align:center;color:#9ca3af;background:#f8fafc;border-radius:10px;margin-top:10px}
@@ -62,7 +62,7 @@ button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13
      <div class="field full"><label for="jobTitle">ชื่องาน *</label><input id="jobTitle" required maxlength="160" placeholder="เช่น ติดตั้ง Solar / PM Compressor"></div>
      <div class="field full"><label for="workSite">สถานที่เข้าหน้างาน</label><input id="workSite" maxlength="200" placeholder="ชื่อลูกค้า / โรงงาน / พื้นที่"></div>
      <div class="field"><label for="workDate">วันที่ *</label><input id="workDate" type="date" required></div>
-     <div class="field full"><label for="attendees">สมาชิกที่ไปหน้างาน (เลือกได้หลายคน)</label><select id="attendees" multiple size="4" style="width:100%;min-height:112px"></select><small class="muted">กด Ctrl (หรือ Cmd บน Mac) ค้างไว้เพื่อเลือกหลายคน</small></div>
+     <div class="field full"><label>สมาชิกที่ไปหน้างาน (แตะ/คลิกชื่อเพื่อเลือกได้หลายคน)</label><div id="attendeeChoices" class="attendee-choices"></div><small class="muted">คลิกชื่อเพื่อเลือกหรือยกเลิกได้ทันที ไม่ต้องกด Ctrl</small></div>
      <div class="field"><label for="startTime">เวลาเริ่ม</label><input id="startTime" type="time"></div>
      <div class="field"><label for="endTime">เวลาสิ้นสุด</label><input id="endTime" type="time"></div>
      <div class="field full"><label for="jobNote">รายละเอียด / หมายเหตุ</label><textarea id="jobNote" maxlength="1000" placeholder="รายละเอียดงาน อุปกรณ์ที่ต้องเตรียม หรือหมายเหตุ"></textarea></div>
@@ -107,7 +107,21 @@ async function loadTeamMembers(){
  const {data,error}=await sb.rpc('get_project_members',{p_project_id:currentProject.id});
  if(error){$('projectHint').textContent='โหลดรายชื่อสมาชิกไม่สำเร็จ: '+error.message;teamMembers=[];return}
  teamMembers=data||[];
- $('attendees').innerHTML=teamMembers.map(m=>'<option value="'+esc(m.user_id)+'">'+esc(m.email)+'</option>').join('');
+ renderAttendeeChoices([]);
+}
+function renderAttendeeChoices(selectedIds=[]){
+ const selected=new Set(selectedIds);
+ if(!teamMembers.length){$('attendeeChoices').innerHTML='<div class="attendee-empty">ไม่พบสมาชิกใน Project นี้</div>';return}
+ $('attendeeChoices').innerHTML=teamMembers.map(m=>'<button type="button" class="attendee-choice '+(selected.has(m.user_id)?'selected':'')+'" data-member="'+esc(m.user_id)+'" aria-pressed="'+selected.has(m.user_id)+'">'+(selected.has(m.user_id)?'✓ ':'')+esc(m.email)+'</button>').join('');
+ $('attendeeChoices').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>{
+  const id=b.dataset.member;
+  const ids=Array.from($('attendeeChoices').querySelectorAll('[data-member].selected')).map(x=>x.dataset.member);
+  const next=ids.includes(id)?ids.filter(x=>x!==id):[...ids,id];
+  renderAttendeeChoices(next);
+ });
+}
+function selectedAttendeeIds(){
+ return Array.from($('attendeeChoices').querySelectorAll('[data-member].selected')).map(b=>b.dataset.member);
 }
 function attendeeLabel(j){
  const ids=j.attendee_ids||[];
@@ -153,7 +167,7 @@ function resetForm(clearMessage=true){
 }
 function editJob(id){
  const j=jobs.find(x=>x.id===id);if(!j)return;
- editingId=id;selectedDate=j.work_date;$('workDate').value=j.work_date;$('jobTitle').value=j.job_title||'';$('workSite').value=j.work_site||'';Array.from($('attendees').options).forEach(o=>o.selected=(j.attendee_ids||[]).includes(o.value));$('startTime').value=j.start_time||'';$('endTime').value=j.end_time||'';$('jobNote').value=j.note||'';
+ editingId=id;selectedDate=j.work_date;$('workDate').value=j.work_date;$('jobTitle').value=j.job_title||'';$('workSite').value=j.work_site||'';renderAttendeeChoices(j.attendee_ids||[]);$('startTime').value=j.start_time||'';$('endTime').value=j.end_time||'';$('jobNote').value=j.note||'';
  $('formTitle').textContent='✏️ แก้ไขงาน';$('saveJob').textContent='บันทึกการแก้ไข';$('cancelEdit').style.display='inline-block';renderCalendar();renderDayJobs();
 }
 async function saveJob(e){
@@ -162,7 +176,7 @@ async function saveJob(e){
  const work_date=$('workDate').value,job_title=$('jobTitle').value.trim(),start_time=$('startTime').value||null,end_time=$('endTime').value||null;
  if(!work_date||!job_title){$('formMsg').textContent='กรุณากรอกวันที่และชื่องาน';return}
  if(start_time&&end_time&&end_time<start_time){$('formMsg').textContent='เวลาสิ้นสุดต้องไม่น้อยกว่าเวลาเริ่ม';return}
- const payload={project_id:currentProject.id,work_date,job_title,work_site:$('workSite').value.trim()||null,start_time,end_time,attendee_ids:Array.from($('attendees').selectedOptions).map(o=>o.value),attendees:null,note:$('jobNote').value.trim()||null};
+ const payload={project_id:currentProject.id,work_date,job_title,work_site:$('workSite').value.trim()||null,start_time,end_time,attendee_ids:selectedAttendeeIds(),attendees:null,note:$('jobNote').value.trim()||null};
  $('saveJob').disabled=true;
  let result;
  if(editingId)result=await sb.from('work_schedules').update(payload).eq('id',editingId).select().single();
