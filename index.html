@@ -15,7 +15,7 @@ localStorage.setItem('team_money_config', JSON.stringify({url:"https://aphbgerac
 header{background:#111827;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
 h1{margin:0;font-size:22px}.wrap{max-width:1100px;margin:24px auto;padding:0 16px}
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 14px #00000008}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:16px;border-radius:12px;background:#f8fafc}.stat b{display:block;font-size:25px;margin-top:6px}.profit-positive{color:#047857}.profit-negative{color:#b91c1c}.page-tabs{padding:12px 16px}.page-tabs button{min-width:150px}.chart-wrap{width:100%;overflow:hidden}.chart-wrap svg{display:block;width:100%;height:auto;max-height:360px}.chart-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:14px;color:#4b5563}.legend-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:16px;border-radius:12px;background:#f8fafc}.stat b{display:block;font-size:25px;margin-top:6px}.profit-positive{color:#047857}.profit-negative{color:#b91c1c}.money-positive{color:#047857!important}.money-negative{color:#b91c1c!important}.money-neutral{color:#172b3a!important}.page-tabs{padding:12px 16px}.page-tabs button{min-width:150px}.chart-wrap{width:100%;overflow:hidden}.chart-wrap svg{display:block;width:100%;height:auto;max-height:360px}.chart-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:14px;color:#4b5563}.legend-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
 .project-chart-list{display:grid;gap:14px;margin-top:14px}.project-chart-item{border:1px solid #e5e7eb;border-radius:12px;padding:16px;background:#fff}.project-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}.project-chart-name{font-weight:700;color:#172033}.project-chart-profit{font-weight:700}.project-chart-meta{display:flex;gap:8px 16px;flex-wrap:wrap;color:#6b7280;font-size:13px;margin-bottom:14px}.metric-row{display:grid;grid-template-columns:90px minmax(80px,1fr) 130px;gap:10px;align-items:center;margin-top:10px;font-size:13px}.metric-label{color:#4b5563}.metric-track{height:13px;border-radius:99px;background:#f1f5f9;overflow:hidden;position:relative}.metric-fill{height:100%;border-radius:99px;background:#f59e0b}.metric-track.profit-track{overflow:hidden;background:linear-gradient(to right,transparent 49.8%,#94a3b8 49.8%,#94a3b8 50.2%,transparent 50.2%),#f1f5f9}.metric-track.profit-track .metric-fill{position:absolute;top:0}.metric-value{text-align:right;font-weight:600;color:#374151}
 @media(max-width:520px){.metric-row{grid-template-columns:74px minmax(60px,1fr) 102px;gap:6px;font-size:12px}.project-chart-item{padding:12px}}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}input,select,button{font:inherit;padding:10px 12px;border-radius:9px;border:1px solid #d1d5db}
@@ -219,6 +219,8 @@ input,select{border-color:#d4dfe5;border-radius:10px}
 let sb, user, projects=[], currentProject=null, mode="login";
 
 function money(n){return new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:2}).format(n||0)}
+function signedMoney(n){const value=Number(n)||0;return (value>0?'+':value<0?'-':'')+money(Math.abs(value))}
+function setMoneyColor(el,value){el.classList.remove('money-positive','money-negative','money-neutral');el.classList.add(value>0?'money-positive':value<0?'money-negative':'money-neutral')}
 function msg(id,t){document.getElementById(id).textContent=t||''}
 
 async function setup(){
@@ -368,13 +370,13 @@ async function refresh(){
   let income=0,expense=0;
   (data||[]).forEach(t=>t.type==='income'?income+=Number(t.amount):expense+=Number(t.amount));
   document.getElementById('budget').textContent=money(currentProject.budget);
-  document.getElementById('income').textContent=money(income);
-  document.getElementById('expense').textContent=money(expense);
-  document.getElementById('balance').textContent=money(income-expense);
+  document.getElementById('income').textContent='+'+money(income);setMoneyColor(document.getElementById('income'),income);
+  document.getElementById('expense').textContent='-'+money(expense);setMoneyColor(document.getElementById('expense'),-expense);
+  document.getElementById('balance').textContent=signedMoney(income-expense);setMoneyColor(document.getElementById('balance'),income-expense);
   const pct=currentProject.budget>0?Math.min(100,expense/currentProject.budget*100):0;
   document.getElementById('progress').style.width=pct+'%';
   document.getElementById('progressText').textContent=pct.toFixed(1)+'% ของงบถูกใช้ไป';
-  document.getElementById('txTable').innerHTML=(data||[]).map(t=>`<tr><td>${new Date(t.created_at).toLocaleDateString('th-TH')}</td><td>${t.type==='income'?'เงินเข้า':'ค่าใช้จ่าย'}</td><td>${escapeHtml(t.description||'-')}</td><td>${escapeHtml(t.category||'-')}</td><td>${money(t.amount)}</td><td>${escapeHtml(t.recorded_by||'-')}</td><td>${escapeHtml(t.note||'-')}</td><td style="white-space:nowrap"><button class="danger" type="button" onclick="deleteTransaction('${t.id}')"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg> ลบ</button></td></tr>`).join('');
+  document.getElementById('txTable').innerHTML=(data||[]).map(t=>`<tr><td>${new Date(t.created_at).toLocaleDateString('th-TH')}</td><td>${t.type==='income'?'เงินเข้า':'ค่าใช้จ่าย'}</td><td>${escapeHtml(t.description||'-')}</td><td>${escapeHtml(t.category||'-')}</td><td class="${t.type==='income'?'money-positive':'money-negative'}" style="font-weight:700">${t.type==='income'?'+':'-'}${money(t.amount)}</td><td>${escapeHtml(t.recorded_by||'-')}</td><td>${escapeHtml(t.note||'-')}</td><td style="white-space:nowrap"><button class="danger" type="button" onclick="deleteTransaction('${t.id}')"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg> ลบ</button></td></tr>`).join('');
   await renderDashboard();
 }
 
@@ -386,8 +388,8 @@ async function renderHome(){
   const sums=new Map((projects||[]).map(p=>[p.id,{project:p,income:0,expense:0}]));
   (data||[]).forEach(t=>{const x=sums.get(t.project_id);if(!x)return;const n=Number(t.amount)||0;if(t.type==='income')x.income+=n;else if(t.type==='expense')x.expense+=n;});
   const rows=[...sums.values()];document.getElementById('app').classList.toggle('no-projects',rows.length===0);const income=rows.reduce((s,x)=>s+x.income,0),expense=rows.reduce((s,x)=>s+x.expense,0),profit=income-expense;
-  document.getElementById('homeIncome').textContent=money(income);document.getElementById('homeExpense').textContent=money(expense);
-  const p=document.getElementById('homeProfit');p.textContent=money(profit);p.className=profit>=0?'profit-positive':'profit-negative';
+  document.getElementById('homeIncome').textContent='+'+money(income);setMoneyColor(document.getElementById('homeIncome'),income);document.getElementById('homeExpense').textContent='-'+money(expense);setMoneyColor(document.getElementById('homeExpense'),-expense);
+  const p=document.getElementById('homeProfit');p.textContent=signedMoney(profit);p.className=profit>=0?'profit-positive':'profit-negative';
   document.getElementById('homeProjectCount').textContent=String(rows.length);
   document.getElementById('homeProjectList').innerHTML=rows.length?rows.map(x=>{const net=x.income-x.expense;return '<div class="home-project"><b>'+escapeHtml(x.project.name||'Project')+'</b><small>รายรับ '+money(x.income)+' · ค่าใช้จ่าย '+money(x.expense)+'</small><div class="profit '+(net>=0?'profit-positive':'profit-negative')+'">'+(net>=0?'กำไร ':'ขาดทุน ')+money(Math.abs(net))+'</div></div>'}).join(''):'<p class="muted">ยังไม่มี Project เริ่มต้นด้วยการกด “สร้าง Project” ด้านบน</p>';
 }
@@ -417,10 +419,10 @@ async function renderDashboard(){
   const allIncome=rows.reduce((sum,x)=>sum+x.income,0);
   const allExpense=rows.reduce((sum,x)=>sum+x.expense,0);
   const allProfit=allIncome-allExpense;
-  document.getElementById('dashIncome').textContent=money(allIncome);
-  document.getElementById('dashExpense').textContent=money(allExpense);
+  document.getElementById('dashIncome').textContent='+'+money(allIncome);setMoneyColor(document.getElementById('dashIncome'),allIncome);
+  document.getElementById('dashExpense').textContent='-'+money(allExpense);setMoneyColor(document.getElementById('dashExpense'),-allExpense);
   const profitEl=document.getElementById('dashProfit');
-  profitEl.textContent=money(allProfit);
+  profitEl.textContent=signedMoney(allProfit);
   profitEl.className=allProfit>=0?'profit-positive':'profit-negative';
   document.getElementById('dashProjectCount').textContent=rows.length+' โครงการ';
 
