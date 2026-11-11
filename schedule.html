@@ -130,7 +130,6 @@ function attendeeLabel(j){
 }
 async function loadJobs(){
  if(!currentProject)return;
- $('projectHint').textContent='กำลังโหลดตารางงาน…';
  const start=toISODate(monthCursor),end=toISODate(new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,0));
  const {data,error}=await sb.from('work_schedules').select('*').eq('project_id',currentProject.id).gte('work_date',start).lte('work_date',end).order('start_time',{ascending:true});
  if(error){$('dayJobs').innerHTML='<div class="empty">โหลดตารางงานไม่สำเร็จ: '+esc(error.message)+'</div>';return}
