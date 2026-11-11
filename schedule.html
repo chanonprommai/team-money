@@ -62,7 +62,7 @@ button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13
      <div class="field full"><label for="jobTitle">ชื่องาน *</label><input id="jobTitle" required maxlength="160" placeholder="เช่น ติดตั้ง Solar / PM Compressor"></div>
      <div class="field full"><label for="workSite">สถานที่เข้าหน้างาน</label><input id="workSite" maxlength="200" placeholder="ชื่อลูกค้า / โรงงาน / พื้นที่"></div>
      <div class="field"><label for="workDate">วันที่ *</label><input id="workDate" type="date" required></div>
-     <div class="field"><label for="attendees">ผู้เข้าหน้างาน</label><input id="attendees" maxlength="300" placeholder="เช่น ช่าง A, ช่าง B"></div>
+     <div class="field full"><label for="attendees">สมาชิกที่ไปหน้างาน (เลือกได้หลายคน)</label><select id="attendees" multiple size="4" style="width:100%;min-height:112px"></select><small class="muted">กด Ctrl (หรือ Cmd บน Mac) ค้างไว้เพื่อเลือกหลายคน</small></div>
      <div class="field"><label for="startTime">เวลาเริ่ม</label><input id="startTime" type="time"></div>
      <div class="field"><label for="endTime">เวลาสิ้นสุด</label><input id="endTime" type="time"></div>
      <div class="field full"><label for="jobNote">รายละเอียด / หมายเหตุ</label><textarea id="jobNote" maxlength="1000" placeholder="รายละเอียดงาน อุปกรณ์ที่ต้องเตรียม หรือหมายเหตุ"></textarea></div>
@@ -73,7 +73,7 @@ button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13
  </div>
 </main>
 <script>
-let sb,user,projects=[],currentProject=null,monthCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1),selectedDate=toISODate(new Date()),jobs=[],editingId=null;
+let sb,user,projects=[],teamMembers=[],currentProject=null,monthCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1),selectedDate=toISODate(new Date()),jobs=[],editingId=null;
 const $=id=>document.getElementById(id);
 function toISODate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function parseDate(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
@@ -90,7 +90,7 @@ async function init(){
  $('userEmail').textContent=user.email||'';
  $('prevMonth').onclick=()=>changeMonth(-1);$('nextMonth').onclick=()=>changeMonth(1);
  $('todayBtn').onclick=()=>{const d=new Date();monthCursor=new Date(d.getFullYear(),d.getMonth(),1);selectDate(toISODate(d))};
- $('projectSelect').onchange=()=>{currentProject=projects.find(p=>p.id===$('projectSelect').value)||null;loadJobs()};
+ $('projectSelect').onchange=async()=>{currentProject=projects.find(p=>p.id===$('projectSelect').value)||null;await loadTeamMembers();loadJobs()};
  $('jobForm').onsubmit=saveJob;$('cancelEdit').onclick=resetForm;
  const {data,error}=await sb.from('projects').select('id,name,created_by').order('created_at',{ascending:true});
  if(error){$('projectHint').textContent='โหลด Project ไม่สำเร็จ: '+error.message;return}
@@ -98,10 +98,22 @@ async function init(){
  if(!projects.length){$('projectHint').textContent='ยังไม่มี Project กรุณาสร้าง Project ที่หน้าหลักก่อน';return}
  $('projectSelect').innerHTML=projects.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');
  currentProject=projects[0];$('projectSelect').value=currentProject.id;
- await loadJobs();
+ await loadTeamMembers();await loadJobs();
 }
 function changeMonth(n){monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+n,1);renderCalendar()}
 async function selectDate(date){selectedDate=date;$('workDate').value=date;resetForm(false);await loadJobs()}
+async function loadTeamMembers(){
+ if(!currentProject)return;
+ const {data,error}=await sb.rpc('get_project_members',{p_project_id:currentProject.id});
+ if(error){$('projectHint').textContent='โหลดรายชื่อสมาชิกไม่สำเร็จ: '+error.message;teamMembers=[];return}
+ teamMembers=data||[];
+ $('attendees').innerHTML=teamMembers.map(m=>'<option value="'+esc(m.user_id)+'">'+esc(m.email)+'</option>').join('');
+}
+function attendeeLabel(j){
+ const ids=j.attendee_ids||[];
+ if(ids.length)return ids.map(id=>teamMembers.find(m=>m.user_id===id)?.email||'สมาชิกทีม').join(', ');
+ return j.attendees||'ยังไม่ระบุผู้เข้าหน้างาน';
+}
 async function loadJobs(){
  if(!currentProject)return;
  $('projectHint').textContent='กำลังโหลดตารางงาน…';
@@ -132,7 +144,7 @@ function renderDayJobs(){
  const list=jobs.filter(j=>j.work_date===selectedDate);
  $('selectedTitle').textContent=thaiDate(selectedDate);$('dayCount').textContent=list.length+' งาน';
  if(!list.length){$('dayJobs').innerHTML='<div class="empty">วันนี้ยังไม่มีงาน<br><span class="muted">เพิ่มงานได้จากแบบฟอร์มด้านล่าง</span></div>';return}
- $('dayJobs').innerHTML=list.map(j=>'<article class="job"><div class="job-head"><div><div class="job-title">'+esc(j.job_title)+'</div><div class="job-meta">'+(j.work_site?'📍 '+esc(j.work_site)+'<br>':'')+'🕒 '+esc(timeRange(j))+'<br>👷 '+esc(j.attendees||'ยังไม่ระบุผู้เข้าหน้างาน')+(j.note?'<br>📝 '+esc(j.note):'')+'</div></div><div class="job-actions"><button type="button" class="secondary" data-edit="'+j.id+'">แก้ไข</button><button type="button" class="danger" data-delete="'+j.id+'">ลบ</button></div></div></article>').join('');
+ $('dayJobs').innerHTML=list.map(j=>'<article class="job"><div class="job-head"><div><div class="job-title">'+esc(j.job_title)+'</div><div class="job-meta">'+(j.work_site?'📍 '+esc(j.work_site)+'<br>':'')+'🕒 '+esc(timeRange(j))+'<br>👷 '+esc(attendeeLabel(j))+(j.note?'<br>📝 '+esc(j.note):'')+'</div></div><div class="job-actions"><button type="button" class="secondary" data-edit="'+j.id+'">แก้ไข</button><button type="button" class="danger" data-delete="'+j.id+'">ลบ</button></div></div></article>').join('');
  $('dayJobs').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editJob(b.dataset.edit));
  $('dayJobs').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteJob(b.dataset.delete));
 }
@@ -141,7 +153,7 @@ function resetForm(clearMessage=true){
 }
 function editJob(id){
  const j=jobs.find(x=>x.id===id);if(!j)return;
- editingId=id;selectedDate=j.work_date;$('workDate').value=j.work_date;$('jobTitle').value=j.job_title||'';$('workSite').value=j.work_site||'';$('attendees').value=j.attendees||'';$('startTime').value=j.start_time||'';$('endTime').value=j.end_time||'';$('jobNote').value=j.note||'';
+ editingId=id;selectedDate=j.work_date;$('workDate').value=j.work_date;$('jobTitle').value=j.job_title||'';$('workSite').value=j.work_site||'';Array.from($('attendees').options).forEach(o=>o.selected=(j.attendee_ids||[]).includes(o.value));$('startTime').value=j.start_time||'';$('endTime').value=j.end_time||'';$('jobNote').value=j.note||'';
  $('formTitle').textContent='✏️ แก้ไขงาน';$('saveJob').textContent='บันทึกการแก้ไข';$('cancelEdit').style.display='inline-block';renderCalendar();renderDayJobs();
 }
 async function saveJob(e){
@@ -150,7 +162,7 @@ async function saveJob(e){
  const work_date=$('workDate').value,job_title=$('jobTitle').value.trim(),start_time=$('startTime').value||null,end_time=$('endTime').value||null;
  if(!work_date||!job_title){$('formMsg').textContent='กรุณากรอกวันที่และชื่องาน';return}
  if(start_time&&end_time&&end_time<start_time){$('formMsg').textContent='เวลาสิ้นสุดต้องไม่น้อยกว่าเวลาเริ่ม';return}
- const payload={project_id:currentProject.id,work_date,job_title,work_site:$('workSite').value.trim()||null,start_time,end_time,attendees:$('attendees').value.trim()||null,note:$('jobNote').value.trim()||null};
+ const payload={project_id:currentProject.id,work_date,job_title,work_site:$('workSite').value.trim()||null,start_time,end_time,attendee_ids:Array.from($('attendees').selectedOptions).map(o=>o.value),attendees:null,note:$('jobNote').value.trim()||null};
  $('saveJob').disabled=true;
  let result;
  if(editingId)result=await sb.from('work_schedules').update(payload).eq('id',editingId).select().single();
