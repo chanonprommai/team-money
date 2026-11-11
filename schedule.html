@@ -29,7 +29,7 @@ button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13
 .job{border:1px solid #e5e7eb;border-radius:11px;padding:13px;margin-top:10px}.job-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
 .job-title{font-weight:750}.job-meta{font-size:13px;color:#6b7280;margin-top:5px;line-height:1.6}.job-actions{display:flex;gap:6px}.job-actions button{font-size:12px;padding:7px 9px}
 .empty{padding:22px;text-align:center;color:#9ca3af;background:#f8fafc;border-radius:10px;margin-top:10px}
-#app{display:none}#login{max-width:430px;margin:70px auto}
+#app{display:block}#login{max-width:430px;margin:70px auto}
 @media(max-width:760px){.content-grid{grid-template-columns:1fr}.day{min-height:78px;padding:5px;gap:3px}.day-events{font-size:10px;padding:2px 3px}.calendar{gap:4px}.weekday{font-size:11px}.day-more{font-size:10px}}
 @media(max-width:430px){.day{min-height:62px}.day-events{max-width:100%}.calendar{gap:3px}.card{padding:13px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
@@ -82,10 +82,10 @@ function thaiDate(s){return parseDate(s).toLocaleDateString('th-TH',{weekday:'lo
 function timeRange(j){return [j.start_time?j.start_time.slice(0,5):'',j.end_time?j.end_time.slice(0,5):''].filter(Boolean).join(' – ')||'ไม่ระบุเวลา'}
 async function init(){
  const cfg=JSON.parse(localStorage.getItem('team_money_config')||'null');
- if(!cfg?.url||!cfg?.key){$('login').style.display='block';return}
+ if(!cfg?.url||!cfg?.key){$('app').style.display='none';$('login').style.display='block';return}
  sb=supabase.createClient(cfg.url,cfg.key);
  const {data:{session}}=await sb.auth.getSession();user=session?.user;
- if(!user){$('login').style.display='block';return}
+ if(!user){$('app').style.display='none';$('login').style.display='block';return}
  $('app').style.display='block';
  $('userEmail').textContent=user.email||'';
  $('prevMonth').onclick=()=>changeMonth(-1);$('nextMonth').onclick=()=>changeMonth(1);
