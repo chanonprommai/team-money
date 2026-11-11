@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Money | ตารางงาน</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f5f7fb;color:#172033}
+header{background:#111827;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:21px;margin:0}.wrap{max-width:1180px;margin:22px auto;padding:0 16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 14px #00000008}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input,select,textarea,button{font:inherit;padding:10px 12px;border-radius:9px;border:1px solid #d1d5db}
+input,select,textarea{background:#fff;color:#172033}button{cursor:pointer;background:#111827;color:#fff;border:0}
+button.secondary{background:#e5e7eb;color:#111827}button.danger{background:#b91c1c}
+button:disabled{opacity:.45;cursor:not-allowed}.muted{color:#6b7280;font-size:13px}.error{color:#b91c1c;margin-top:8px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.month-title{font-size:20px;font-weight:750}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin-top:16px}
+.weekday{text-align:center;color:#6b7280;font-size:13px;font-weight:700;padding:6px 0}
+.day{min-height:104px;border:1px solid #e5e7eb;background:#fff;color:#172033;text-align:left;padding:8px;border-radius:10px;display:flex;flex-direction:column;gap:5px}
+.day:hover{border-color:#64748b}.day.other{opacity:.35}.day.today{border:2px solid #2563eb}.day.selected{background:#eff6ff;border:2px solid #2563eb}
+.day-num{font-weight:750}.day-events{font-size:11px;line-height:1.35;background:#eef2ff;color:#3730a3;border-radius:5px;padding:3px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.day-more{font-size:11px;color:#6b7280}.content-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);gap:16px;align-items:start}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}.field label{font-size:13px;color:#4b5563;font-weight:650}
+.field input,.field textarea{width:100%}.field textarea{min-height:74px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
+.job{border:1px solid #e5e7eb;border-radius:11px;padding:13px;margin-top:10px}.job-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.job-title{font-weight:750}.job-meta{font-size:13px;color:#6b7280;margin-top:5px;line-height:1.6}.job-actions{display:flex;gap:6px}.job-actions button{font-size:12px;padding:7px 9px}
+.empty{padding:22px;text-align:center;color:#9ca3af;background:#f8fafc;border-radius:10px;margin-top:10px}
+#app{display:none}#login{max-width:430px;margin:70px auto}
+@media(max-width:760px){.content-grid{grid-template-columns:1fr}.day{min-height:78px;padding:5px;gap:3px}.day-events{font-size:10px;padding:2px 3px}.calendar{gap:4px}.weekday{font-size:11px}.day-more{font-size:10px}}
+@media(max-width:430px){.day{min-height:62px}.day-events{max-width:100%}.calendar{gap:3px}.card{padding:13px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<header><h1>📅 Team Money · ตารางงาน</h1><div class="row"><span id="userEmail" class="muted" style="color:#d1d5db"></span><button class="secondary" onclick="location.href='index.html'">← กลับหน้าหลัก</button></div></header>
+<div id="login" class="card" style="display:none"><h2>กรุณาเข้าสู่ระบบ</h2><p class="muted">เข้าสู่ระบบผ่าน Team Money ก่อน แล้วกลับมาหน้าตารางงานอีกครั้ง</p><button onclick="location.href='index.html'">ไปหน้าเข้าสู่ระบบ</button></div>
+<main id="app" class="wrap">
+ <section class="card">
+  <div class="row">
+   <div class="field" style="max-width:360px"><label>Project</label><select id="projectSelect"></select></div>
+   <div class="muted" id="projectHint">ตารางงานจะแยกตาม Project ที่เลือก</div>
+  </div>
+ </section>
+ <div class="content-grid">
+  <section class="card">
+   <div class="topline">
+    <div class="row"><button id="prevMonth" class="secondary">‹</button><div id="monthTitle" class="month-title"></div><button id="nextMonth" class="secondary">›</button></div>
+    <button id="todayBtn" class="secondary">วันนี้</button>
+   </div>
+   <div class="calendar" id="calendar"></div>
+   <div class="muted" style="margin-top:12px">กดวันที่ต้องการเพื่อดูงาน หรือเลือกวันว่างเพื่อจองงานใหม่</div>
+  </section>
+  <section class="card">
+   <div class="topline"><h2 id="selectedTitle" style="font-size:18px;margin:0">รายการงาน</h2><span id="dayCount" class="muted"></span></div>
+   <div id="dayJobs"></div>
+   <div class="row" style="justify-content:space-between;margin-top:18px"><h3 id="formTitle" style="font-size:16px;margin:0">＋ จองวัน / เพิ่มงาน</h3><button id="cancelEdit" class="secondary" style="display:none">ยกเลิกแก้ไข</button></div>
+   <form id="jobForm" style="margin-top:12px">
+    <div class="form-grid">
+     <div class="field full"><label for="jobTitle">ชื่องาน *</label><input id="jobTitle" required maxlength="160" placeholder="เช่น ติดตั้ง Solar / PM Compressor"></div>
+     <div class="field full"><label for="workSite">สถานที่เข้าหน้างาน</label><input id="workSite" maxlength="200" placeholder="ชื่อลูกค้า / โรงงาน / พื้นที่"></div>
+     <div class="field"><label for="workDate">วันที่ *</label><input id="workDate" type="date" required></div>
+     <div class="field"><label for="attendees">ผู้เข้าหน้างาน</label><input id="attendees" maxlength="300" placeholder="เช่น ช่าง A, ช่าง B"></div>
+     <div class="field"><label for="startTime">เวลาเริ่ม</label><input id="startTime" type="time"></div>
+     <div class="field"><label for="endTime">เวลาสิ้นสุด</label><input id="endTime" type="time"></div>
+     <div class="field full"><label for="jobNote">รายละเอียด / หมายเหตุ</label><textarea id="jobNote" maxlength="1000" placeholder="รายละเอียดงาน อุปกรณ์ที่ต้องเตรียม หรือหมายเหตุ"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button id="saveJob" type="submit">บันทึกงาน</button><span id="formMsg" class="error"></span></div>
+   </form>
+  </section>
+ </div>
+</main>
+<script>
+let sb,user,projects=[],currentProject=null,monthCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1),selectedDate=toISODate(new Date()),jobs=[],editingId=null;
+const $=id=>document.getElementById(id);
+function toISODate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function parseDate(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function thaiDate(s){return parseDate(s).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+function timeRange(j){return [j.start_time?j.start_time.slice(0,5):'',j.end_time?j.end_time.slice(0,5):''].filter(Boolean).join(' – ')||'ไม่ระบุเวลา'}
+async function init(){
+ const cfg=JSON.parse(localStorage.getItem('team_money_config')||'null');
+ if(!cfg?.url||!cfg?.key){$('login').style.display='block';return}
+ sb=supabase.createClient(cfg.url,cfg.key);
+ const {data:{session}}=await sb.auth.getSession();user=session?.user;
+ if(!user){$('login').style.display='block';return}
+ $('userEmail').textContent=user.email||'';
+ $('prevMonth').onclick=()=>changeMonth(-1);$('nextMonth').onclick=()=>changeMonth(1);
+ $('todayBtn').onclick=()=>{const d=new Date();monthCursor=new Date(d.getFullYear(),d.getMonth(),1);selectDate(toISODate(d))};
+ $('projectSelect').onchange=()=>{currentProject=projects.find(p=>p.id===$('projectSelect').value)||null;loadJobs()};
+ $('jobForm').onsubmit=saveJob;$('cancelEdit').onclick=resetForm;
+ const {data,error}=await sb.from('projects').select('id,name,created_by').order('created_at',{ascending:true});
+ if(error){$('projectHint').textContent='โหลด Project ไม่สำเร็จ: '+error.message;return}
+ projects=data||[];
+ if(!projects.length){$('projectHint').textContent='ยังไม่มี Project กรุณาสร้าง Project ที่หน้าหลักก่อน';return}
+ $('projectSelect').innerHTML=projects.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');
+ currentProject=projects[0];$('projectSelect').value=currentProject.id;
+ await loadJobs();
+}
+function changeMonth(n){monthCursor=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+n,1);renderCalendar()}
+function selectDate(date){selectedDate=date;$('workDate').value=date;resetForm(false);renderCalendar();renderDayJobs()}
+async function loadJobs(){
+ if(!currentProject)return;
+ $('projectHint').textContent='กำลังโหลดตารางงาน…';
+ const start=toISODate(monthCursor),end=toISODate(new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,0));
+ const {data,error}=await sb.from('work_schedules').select('*').eq('project_id',currentProject.id).gte('work_date',start).lte('work_date',end).order('start_time',{ascending:true});
+ if(error){$('projectHint').textContent='โหลดตารางงานไม่สำเร็จ: '+error.message;return}
+ jobs=data||[];$('projectHint').textContent='ตารางงานของ Project: '+currentProject.name;
+ renderCalendar();renderDayJobs();
+}
+function renderCalendar(){
+ $('monthTitle').textContent=monthCursor.toLocaleDateString('th-TH',{month:'long',year:'numeric'});
+ const first=new Date(monthCursor.getFullYear(),monthCursor.getMonth(),1),offset=first.getDay(),days=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,0).getDate();
+ const prevDays=new Date(monthCursor.getFullYear(),monthCursor.getMonth(),0).getDate();
+ const today=toISODate(new Date());let out=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'].map(x=>'<div class="weekday">'+x+'</div>').join('');
+ for(let i=0;i<42;i++){
+  let dateObj,other=false;
+  if(i<offset){dateObj=new Date(monthCursor.getFullYear(),monthCursor.getMonth()-1,prevDays-offset+i+1);other=true}
+  else if(i>=offset+days){dateObj=new Date(monthCursor.getFullYear(),monthCursor.getMonth()+1,i-offset-days+1);other=true}
+  else dateObj=new Date(monthCursor.getFullYear(),monthCursor.getMonth(),i-offset+1);
+  const iso=toISODate(dateObj),items=jobs.filter(j=>j.work_date===iso);
+  const cls=['day',other?'other':'',iso===today?'today':'',iso===selectedDate?'selected':''].filter(Boolean).join(' ');
+  out+='<button type="button" class="'+cls+'" data-date="'+iso+'"><span class="day-num">'+dateObj.getDate()+'</span>'+items.slice(0,2).map(j=>'<span class="day-events">'+esc(j.job_title)+'</span>').join('')+(items.length>2?'<span class="day-more">+'+(items.length-2)+' งาน</span>':'')+'</button>';
+ }
+ $('calendar').innerHTML=out;
+ $('calendar').querySelectorAll('[data-date]').forEach(b=>b.onclick=()=>{const d=b.dataset.date;if(parseDate(d).getMonth()!==monthCursor.getMonth()){monthCursor=new Date(parseDate(d).getFullYear(),parseDate(d).getMonth(),1)}selectDate(d)});
+}
+function renderDayJobs(){
+ const list=jobs.filter(j=>j.work_date===selectedDate);
+ $('selectedTitle').textContent=thaiDate(selectedDate);$('dayCount').textContent=list.length+' งาน';
+ if(!list.length){$('dayJobs').innerHTML='<div class="empty">วันนี้ยังไม่มีงาน<br><span class="muted">เพิ่มงานได้จากแบบฟอร์มด้านล่าง</span></div>';return}
+ $('dayJobs').innerHTML=list.map(j=>'<article class="job"><div class="job-head"><div><div class="job-title">'+esc(j.job_title)+'</div><div class="job-meta">'+(j.work_site?'📍 '+esc(j.work_site)+'<br>':'')+'🕒 '+esc(timeRange(j))+'<br>👷 '+esc(j.attendees||'ยังไม่ระบุผู้เข้าหน้างาน')+(j.note?'<br>📝 '+esc(j.note):'')+'</div></div><div class="job-actions"><button type="button" class="secondary" data-edit="'+j.id+'">แก้ไข</button><button type="button" class="danger" data-delete="'+j.id+'">ลบ</button></div></div></article>').join('');
+ $('dayJobs').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editJob(b.dataset.edit));
+ $('dayJobs').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteJob(b.dataset.delete));
+}
+function resetForm(clearMessage=true){
+ editingId=null;$('jobForm').reset();$('workDate').value=selectedDate;$('formTitle').textContent='＋ จองวัน / เพิ่มงาน';$('saveJob').textContent='บันทึกงาน';$('cancelEdit').style.display='none';if(clearMessage)$('formMsg').textContent='';
+}
+function editJob(id){
+ const j=jobs.find(x=>x.id===id);if(!j)return;
+ editingId=id;selectedDate=j.work_date;$('workDate').value=j.work_date;$('jobTitle').value=j.job_title||'';$('workSite').value=j.work_site||'';$('attendees').value=j.attendees||'';$('startTime').value=j.start_time||'';$('endTime').value=j.end_time||'';$('jobNote').value=j.note||'';
+ $('formTitle').textContent='✏️ แก้ไขงาน';$('saveJob').textContent='บันทึกการแก้ไข';$('cancelEdit').style.display='inline-block';renderCalendar();renderDayJobs();
+}
+async function saveJob(e){
+ e.preventDefault();$('formMsg').textContent='';
+ if(!currentProject)return;
+ const work_date=$('workDate').value,job_title=$('jobTitle').value.trim(),start_time=$('startTime').value||null,end_time=$('endTime').value||null;
+ if(!work_date||!job_title){$('formMsg').textContent='กรุณากรอกวันที่และชื่องาน';return}
+ if(start_time&&end_time&&end_time<start_time){$('formMsg').textContent='เวลาสิ้นสุดต้องไม่น้อยกว่าเวลาเริ่ม';return}
+ const payload={project_id:currentProject.id,work_date,job_title,work_site:$('workSite').value.trim()||null,start_time,end_time,attendees:$('attendees').value.trim()||null,note:$('jobNote').value.trim()||null};
+ $('saveJob').disabled=true;
+ let result;
+ if(editingId)result=await sb.from('work_schedules').update(payload).eq('id',editingId).select().single();
+ else result=await sb.from('work_schedules').insert({...payload,created_by:user.id}).select().single();
+ $('saveJob').disabled=false;
+ if(result.error){$('formMsg').textContent='บันทึกไม่สำเร็จ: '+result.error.message;return}
+ selectedDate=work_date;monthCursor=new Date(parseDate(work_date).getFullYear(),parseDate(work_date).getMonth(),1);resetForm();await loadJobs();
+}
+async function deleteJob(id){
+ const j=jobs.find(x=>x.id===id);if(!j||!confirm('ยืนยันลบงาน "'+j.job_title+'" ใช่หรือไม่?'))return;
+ const {error}=await sb.from('work_schedules').delete().eq('id',id);
+ if(error){alert('ลบไม่สำเร็จ: '+error.message);return}
+ await loadJobs();
+}
+init();
+</script>
+</body>
+</html>
