@@ -43,16 +43,6 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
 </div>
 
 <main id="app" class="wrap hidden">
-  <div class="card">
-    <div class="row">
-      <select id="projectSelect" style="min-width:240px"></select>
-      <button id="newProjectBtn">+ สร้าง Project</button>
-      <button id="editProjectBtn" class="secondary">✏️ แก้ไข Project</button>
-      <button id="deleteProjectBtn" class="danger">🗑️ ลบ Project</button>
-      <button id="logoutBtn" class="secondary">ออกจากระบบ</button>
-    </div>
-  </div>
-
   <div class="card page-tabs"><div class="row">
     <button id="homeTab">🏠 หน้าหลัก</button>
     <button id="recordsTab" class="secondary">🧾 รายการ</button>
@@ -79,6 +69,15 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
   </section>
 
   <div id="projectArea" class="hidden">
+    <div class="card">
+      <div class="row">
+        <select id="projectSelect" style="min-width:240px"></select>
+        <button id="newProjectBtn">+ สร้าง Project</button>
+        <button id="editProjectBtn" class="secondary">✏️ แก้ไข Project</button>
+        <button id="deleteProjectBtn" class="danger">🗑️ ลบ Project</button>
+        <button id="logoutBtn" class="secondary">ออกจากระบบ</button>
+      </div>
+    </div>
     <div class="grid">
       <div class="stat">งบประมาณ<b id="budget">฿0</b></div>
       <div class="stat">เงินเข้า<b id="income">฿0</b></div>
