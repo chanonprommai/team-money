@@ -199,6 +199,7 @@ input,select{border-color:#d4dfe5;border-radius:10px}
 .home-schedule-type{font-size:11px;color:#087895;background:#e8f4f7;border-radius:20px;padding:5px 9px;white-space:nowrap}
 .home-schedule-empty{padding:16px 4px;color:#82919b;font-size:14px}
 @media(max-width:600px){.home-schedule-item{grid-template-columns:58px minmax(0,1fr);gap:9px}.home-schedule-type{grid-column:2;justify-self:start}.home-schedule-date{font-size:12px}}
+.home-schedule-count{display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:25px;padding:0 7px;border-radius:999px;background:#e2f3e9;color:#087443;font-size:12px;font-weight:800}
 </style>
 </head>
 <body>
@@ -245,9 +246,9 @@ input,select{border-color:#d4dfe5;border-radius:10px}
       <button class="home-action" type="button" onclick="showPage('dashboard')"><span class="ico"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17"/><path d="M8 16v-5M13 16V7M18 16v-8"/></svg></span><strong>ภาพรวมและกำไร</strong><span>ดูผลประกอบการ เปรียบเทียบค่าใช้จ่ายและกำไรของแต่ละโครงการ</span></button>
       <button class="home-action" type="button" onclick="showPage('schedule')"><span class="ico"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></span><strong>ตารางงานทีม</strong><span>วางแผนวันเข้าหน้างาน เลือกสมาชิก และติดตามงานตามปฏิทิน</span></button>
     </div>
-    <h3 class="home-section-title">ตารางงานที่กำลังจะมาถึง</h3>
+    <h3 class="home-section-title">ตารางงานวันนี้</h3>
     <div class="card home-schedule-card">
-      <div class="home-schedule-head"><span class="muted">Upcoming team activities</span><button type="button" class="secondary" onclick="showPage('schedule')">ดูตารางทั้งหมด</button></div>
+      <div class="home-schedule-head"><span class="muted" id="homeScheduleSummary">วันนี้มีงานอะไรบ้าง</span><button type="button" class="secondary" onclick="showPage('schedule')">ดูตารางทั้งหมด</button></div>
       <div id="homeScheduleList"><p class="muted">กำลังโหลดตารางงาน...</p></div>
     </div>
     <h3 class="home-section-title">ภาพรวมแต่ละ Project</h3>
@@ -688,16 +689,16 @@ async function renderHomeSchedule(){
  const host=document.getElementById('homeScheduleList');
  if(!host||!sb||!user)return;
  const today=toISODate(new Date());
- const {data,error}=await sb.from('work_schedules').select('*').gte('work_date',today).order('work_date',{ascending:true}).order('start_time',{ascending:true}).limit(8);
- if(error){host.innerHTML='<div class="home-schedule-empty">ไม่สามารถโหลดตารางงานได้ในขณะนี้</div>';return}
- const upcoming=data||[];
- if(!upcoming.length){host.innerHTML='<div class="home-schedule-empty">ยังไม่มีงานที่กำลังจะมาถึง · กด “ดูตารางทั้งหมด” เพื่อเพิ่มงานใหม่</div>';return}
+ const summary=document.getElementById('homeScheduleSummary');
+ const {data,error}=await sb.from('work_schedules').select('*').eq('work_date',today).order('start_time',{ascending:true});
+ if(error){host.innerHTML='<div class="home-schedule-empty">ไม่สามารถโหลดตารางงานได้ในขณะนี้</div>';if(summary)summary.textContent='ตารางงานวันนี้';return}
+ const todaysJobs=data||[];
+ if(summary)summary.innerHTML='วันนี้มีงาน <span class="home-schedule-count">'+todaysJobs.length+'</span> รายการ';
+ if(!todaysJobs.length){host.innerHTML='<div class="home-schedule-empty">วันนี้ยังไม่มีงานที่ลงตารางไว้</div>';return}
  const projectNames=new Map((projects||[]).map(p=>[p.id,p.name||'Project']));
- host.innerHTML='<div class="home-schedule-list">'+upcoming.map(j=>{
-  const d=parseDate(j.work_date),dateLabel=d.toLocaleDateString('th-TH',{day:'2-digit',month:'short'});
-  const dayLabel=d.toLocaleDateString('th-TH',{weekday:'short'});
+ host.innerHTML='<div class="home-schedule-list">'+todaysJobs.map(j=>{
   const time=j.start_time?String(j.start_time).slice(0,5):'ไม่ระบุเวลา';
-  return '<div class="home-schedule-item" role="button" tabindex="0" onclick="openHomeSchedule(\''+j.project_id+'\',\''+j.work_date+'\')" onkeydown="if(event.key===\'Enter\')openHomeSchedule(\''+j.project_id+'\',\''+j.work_date+'\')"><div class="home-schedule-date">'+dateLabel+'<small>'+dayLabel+'</small></div><div><div class="home-schedule-title">'+escapeHtml(j.job_title||'งานตามกำหนด')+'</div><div class="home-schedule-meta">'+escapeHtml(projectNames.get(j.project_id)||'Project')+' · '+escapeHtml(time)+(j.location?' · '+escapeHtml(j.location):'')+'</div></div><span class="home-schedule-type">'+escapeHtml(j.work_type||'งานทั่วไป')+'</span></div>';
+  return '<div class="home-schedule-item" role="button" tabindex="0" onclick="openHomeSchedule(\\''+j.project_id+'\\',\\''+j.work_date+'\\')" onkeydown="if(event.key===\\'Enter\\')openHomeSchedule(\\''+j.project_id+'\\',\\''+j.work_date+'\\')"><div class="home-schedule-date">'+time+'<small>เวลา</small></div><div><div class="home-schedule-title">'+escapeHtml(j.job_title||'งานตามกำหนด')+'</div><div class="home-schedule-meta">'+escapeHtml(projectNames.get(j.project_id)||'Project')+(j.location?' · '+escapeHtml(j.location):'')+'</div></div><span class="home-schedule-type">'+escapeHtml(j.work_type||'งานทั่วไป')+'</span></div>';
  }).join('')+'</div>';
 }
 async function openHomeSchedule(projectId,workDate){
