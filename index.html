@@ -698,7 +698,7 @@ async function renderHomeSchedule(){
  const projectNames=new Map((projects||[]).map(p=>[p.id,p.name||'Project']));
  host.innerHTML='<div class="home-schedule-list">'+todaysJobs.map(j=>{
   const time=j.start_time?String(j.start_time).slice(0,5):'ไม่ระบุเวลา';
-  return '<div class="home-schedule-item" role="button" tabindex="0" onclick="openHomeSchedule(\\''+j.project_id+'\\',\\''+j.work_date+'\\')" onkeydown="if(event.key===\\'Enter\\')openHomeSchedule(\\''+j.project_id+'\\',\\''+j.work_date+'\\')"><div class="home-schedule-date">'+time+'<small>เวลา</small></div><div><div class="home-schedule-title">'+escapeHtml(j.job_title||'งานตามกำหนด')+'</div><div class="home-schedule-meta">'+escapeHtml(projectNames.get(j.project_id)||'Project')+(j.location?' · '+escapeHtml(j.location):'')+'</div></div><span class="home-schedule-type">'+escapeHtml(j.work_type||'งานทั่วไป')+'</span></div>';
+  return '<div class="home-schedule-item" role="button" tabindex="0" onclick="openHomeSchedule(\''+j.project_id+'\',\''+j.work_date+'\')" onkeydown="if(event.key===\'Enter\')openHomeSchedule(\''+j.project_id+'\',\''+j.work_date+'\')"><div class="home-schedule-date">'+time+'<small>เวลา</small></div><div><div class="home-schedule-title">'+escapeHtml(j.job_title||'งานตามกำหนด')+'</div><div class="home-schedule-meta">'+escapeHtml(projectNames.get(j.project_id)||'Project')+(j.location?' · '+escapeHtml(j.location):'')+'</div></div><span class="home-schedule-type">'+escapeHtml(j.work_type||'งานทั่วไป')+'</span></div>';
  }).join('')+'</div>';
 }
 async function openHomeSchedule(projectId,workDate){
