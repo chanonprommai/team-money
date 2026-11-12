@@ -309,7 +309,7 @@ input,select{border-color:#d4dfe5;border-radius:10px}
   </div>
 
 <section id="scheduleArea" class="hidden">
- <div class="card" style="margin-bottom:16px"><div class="row" style="justify-content:space-between"><div><h2 style="margin:0 0 4px">Team Schedule</h2><span class="muted">Plan meetings, site visits and project activities</span></div><select id="scheduleProjectSelect" aria-label="Select Project" style="min-width:220px"></select></div></div>
+ <div class="card" style="margin-bottom:16px"><h2 style="margin:0 0 4px">Team Schedule</h2><span class="muted">Plan meetings, site visits and project activities</span></div>
  <div class="content-grid">
   <section class="card">
    <div class="topline">
@@ -464,11 +464,6 @@ async function deleteJob(id){
 async function initSchedule(){
  if(scheduleReady)return;
  scheduleReady=true;
- const scheduleSelect=$('scheduleProjectSelect');
- scheduleSelect.innerHTML='';
- projects.forEach(p=>{const option=document.createElement('option');option.value=p.id;option.textContent=p.name;scheduleSelect.appendChild(option)});
- if(currentProject)scheduleSelect.value=currentProject.id;
- scheduleSelect.onchange=()=>selectProject(scheduleSelect.value);
  $('prevMonth').onclick=()=>changeMonth(-1);
  $('nextMonth').onclick=()=>changeMonth(1);
  $('todayBtn').onclick=()=>{const d=new Date();monthCursor=new Date(d.getFullYear(),d.getMonth(),1);selectDate(toISODate(d))};
@@ -636,8 +631,6 @@ function showPage(page){
 async function selectProject(id){
   currentProject=projects.find(p=>p.id===id); if(!currentProject)return;
   document.getElementById('projectName').textContent=currentProject.name;
-  const scheduleSelect=document.getElementById('scheduleProjectSelect');
-  if(scheduleSelect)scheduleSelect.value=currentProject.id;
   await refresh();
   renderHome();
   if(scheduleReady && currentPage==='schedule')await loadScheduleProject();
