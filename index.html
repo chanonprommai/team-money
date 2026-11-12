@@ -33,7 +33,11 @@ body{background:#f3f6f8;color:#172b3a}
 header{position:fixed;z-index:20;left:5.4%;top:16px;width:290px;height:56px;padding:0;background:transparent;color:#172b3a;justify-content:flex-start;gap:12px}
 header h1{font-size:22px;font-weight:750;letter-spacing:-.4px}
 header h1:before{content:"ET";display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;margin-right:12px;border-radius:13px;background:#087895;color:#fff;font-size:17px;vertical-align:middle}
-#userBox{display:none}
+#userBox{display:flex}
+.account-box{position:fixed;z-index:21;left:5.4%;top:310px;width:220px;flex-direction:column;align-items:stretch;gap:9px;padding:13px;background:#fff;border:1px solid #dce5e9;border-radius:13px;box-shadow:0 4px 16px #172b3a0a}
+#userEmail{display:block;max-width:100%;overflow-wrap:anywhere;font-size:12px;font-weight:650;color:#526775;line-height:1.4}
+#userBox button{width:100%;min-height:38px;font-size:13px}
+@media(max-width:900px){.account-box{left:auto;right:18px;top:14px;width:auto;max-width:58vw;padding:6px 8px;flex-direction:row;align-items:center;gap:6px}#userEmail{max-width:34vw;font-size:10px}#userBox button{width:auto;min-height:34px;padding:6px 10px;font-size:11px}}
 .wrap{max-width:none;margin:0 5.5% 0 23%;padding:12px 0 40px}
 .page-tabs{position:fixed;z-index:19;left:5.4%;top:88px;width:290px;padding:0;background:transparent;border:0;box-shadow:none}
 .page-tabs .row{display:flex;flex-direction:column;align-items:stretch;gap:5px}
@@ -203,7 +207,8 @@ input,select{border-color:#d4dfe5;border-radius:10px}
 </style>
 </head>
 <body>
-<header><h1>ET Works</h1><div id="userBox"></div></header>
+<header><h1>ET Works</h1></header>
+<div id="userBox" class="account-box"><span id="userEmail"></span><button id="logoutBtn" type="button" class="secondary">Log out</button></div>
 
 <div id="auth" class="auth card">
   <h2 id="authTitle">เข้าสู่ระบบ</h2>
@@ -262,7 +267,7 @@ input,select{border-color:#d4dfe5;border-radius:10px}
         <button id="newProjectBtn">+ สร้าง Project</button>
         <button id="editProjectBtn" class="secondary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.8 4.8L8 20l11-11-4-4L4 16zM13.5 6.5l4 4"/></svg> แก้ไข Project</button>
         <button id="deleteProjectBtn" class="danger"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg> ลบ Project</button>
-        <button id="logoutBtn" class="secondary">ออกจากระบบ</button>
+        
       </div>
     </div>
     <div class="grid">
@@ -553,7 +558,7 @@ async function auth(){
 function renderAuth(){
   document.getElementById('auth').classList.toggle('hidden',!!user);
   document.getElementById('app').classList.toggle('hidden',!user);
-  document.getElementById('userBox').textContent=user?user.email:'';
+  document.getElementById('userEmail').textContent=user?(user.email||'Signed in'):'';
 }
 async function loadProjects(){
   const {data,error}=await sb.from('projects').select('*').order('created_at',{ascending:true});
